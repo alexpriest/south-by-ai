@@ -1,27 +1,29 @@
 'use client'
 
-import { useState } from 'react'
 import type { ScheduleSession } from '@/lib/types'
 import { getTrackColor } from '@/lib/track-colors'
 
 interface TimelineBlockProps {
   session: ScheduleSession
   style: React.CSSProperties
+  isTopPick?: boolean
+  onClick?: () => void
 }
 
-export function TimelineBlock({ session, style }: TimelineBlockProps) {
-  const [expanded, setExpanded] = useState(false)
+export function TimelineBlock({ session, style, isTopPick, onClick }: TimelineBlockProps) {
   const trackColor = getTrackColor(session.track)
+  const isAlternative = !isTopPick && (session.priority || 2) >= 2
 
   return (
     <button
-      onClick={() => setExpanded(!expanded)}
+      id={`timeline-block-${session.id}`}
+      onClick={onClick}
       style={{
         ...style,
         borderLeftColor: trackColor,
       }}
       className={`absolute text-left border-l-[3px] bg-white/5 backdrop-blur-md border-t border-r border-b border-white/10 rounded-r-lg px-3 py-2 hover:bg-white/[0.08] transition-all duration-200 overflow-hidden cursor-pointer group ${
-        expanded ? 'z-10 shadow-lg shadow-black/30' : ''
+        isAlternative ? 'opacity-60 hover:opacity-90' : ''
       }`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -30,9 +32,17 @@ export function TimelineBlock({ session, style }: TimelineBlockProps) {
             {session.startTime} &ndash; {session.endTime}
           </p>
           <h4 className="text-sm font-heading font-bold text-text leading-tight mt-0.5 group-hover:text-primary transition-colors duration-200 line-clamp-2">
+            {isTopPick && (
+              <svg className="inline-block w-3.5 h-3.5 text-primary mr-1 -mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            )}
             {session.title}
           </h4>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
+            {isTopPick && (
+              <span className="text-[10px] font-medium text-primary">Top Pick</span>
+            )}
             {session.venue && (
               <span className="text-[11px] text-muted truncate">{session.venue}</span>
             )}
@@ -46,28 +56,6 @@ export function TimelineBlock({ session, style }: TimelineBlockProps) {
               >
                 {session.track}
               </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div
-        className={`grid transition-all duration-200 ease-in-out ${
-          expanded ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0'
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="pt-2 border-t border-white/10">
-            {session.description && (
-              <p className="text-xs text-muted leading-relaxed">{session.description}</p>
-            )}
-            {session.speakers.length > 0 && (
-              <p className="text-xs text-text/70 mt-1.5">
-                {session.speakers.join(', ')}
-              </p>
-            )}
-            {session.reason && (
-              <p className="text-xs text-accent/80 mt-1.5 italic">{session.reason}</p>
             )}
           </div>
         </div>

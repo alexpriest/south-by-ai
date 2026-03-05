@@ -1,7 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import type { DaySchedule, ScheduleSession } from '@/lib/types'
 import { TimelineBlock } from './timeline-block'
+import { SessionPopover } from './session-popover'
 
 interface TimelineViewProps {
   day: DaySchedule
@@ -58,6 +60,8 @@ function isSXSWDate(dateStr: string): boolean {
 const hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i)
 
 export function TimelineView({ day }: TimelineViewProps) {
+  const [popover, setPopover] = useState<{ session: ScheduleSession; rect: DOMRect } | null>(null)
+
   if (day.sessions.length === 0) {
     return (
       <p className="text-muted text-center py-12">
@@ -112,8 +116,13 @@ export function TimelineView({ day }: TimelineViewProps) {
 
       {/* Session blocks */}
       <div className="absolute left-14 right-0 top-0 bottom-0">
-        {overlapGroups.map((group) =>
-          group.map((session, indexInGroup) => {
+        {overlapGroups.map((group) => {
+          // Sort by priority (lowest = best)
+          const sorted = [...group].sort(
+            (a, b) => (a.priority || 2) - (b.priority || 2)
+          )
+
+          return sorted.map((session, indexInGroup) => {
             const startMin = parseTime(session.startTime)
             const endMin = parseTime(session.endTime)
             const duration = endMin - startMin
@@ -121,14 +130,35 @@ export function TimelineView({ day }: TimelineViewProps) {
             const top = ((startMin - START_MINUTES) / TOTAL_MINUTES) * 100
             const height = (duration / TOTAL_MINUTES) * 100
 
-            const groupSize = group.length
-            const widthPercent = 100 / groupSize
-            const leftPercent = indexInGroup * widthPercent
+            const groupSize = sorted.length
+            const isTopPick = groupSize > 1 && indexInGroup === 0
+
+            // Top pick gets 60% width, alternatives split remaining 40%
+            let widthPercent: number
+            let leftPercent: number
+            if (groupSize === 1) {
+              widthPercent = 100
+              leftPercent = 0
+            } else if (isTopPick) {
+              widthPercent = 60
+              leftPercent = 0
+            } else {
+              const altCount = groupSize - 1
+              widthPercent = 40 / altCount
+              leftPercent = 60 + (indexInGroup - 1) * widthPercent
+            }
 
             return (
               <TimelineBlock
                 key={session.id}
                 session={session}
+                isTopPick={isTopPick}
+                onClick={() => {
+                  const el = document.getElementById(`timeline-block-${session.id}`)
+                  if (el) {
+                    setPopover({ session, rect: el.getBoundingClientRect() })
+                  }
+                }}
                 style={{
                   top: `${top}%`,
                   height: `${height}%`,
@@ -139,8 +169,17 @@ export function TimelineView({ day }: TimelineViewProps) {
               />
             )
           })
-        )}
+        })}
       </div>
+
+      {/* Session popover */}
+      {popover && (
+        <SessionPopover
+          session={popover.session}
+          anchorRect={popover.rect}
+          onClose={() => setPopover(null)}
+        />
+      )}
     </div>
   )
 }
