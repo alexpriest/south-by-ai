@@ -2,11 +2,20 @@ import { NextResponse } from 'next/server'
 import { getSessions } from '@/lib/sessions'
 import { refineSchedule } from '@/lib/claude'
 import { getSchedule, saveSchedule } from '@/lib/kv'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export const maxDuration = 60
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get('x-forwarded-for') || 'unknown'
+    if (!checkRateLimit(`refine:${ip}`, 20, 60 * 60 * 1000)) {
+      return NextResponse.json(
+        { error: 'Too many refinements. Please wait a bit.' },
+        { status: 429 }
+      )
+    }
+
     const { scheduleId, message } = await request.json()
 
     if (!scheduleId || !message?.trim()) {

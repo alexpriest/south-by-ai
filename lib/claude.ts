@@ -38,27 +38,39 @@ export async function generateSchedule(
   )
 
   // Use track-filtered if it has enough sessions, otherwise fall back to all badge-filtered
-  const sessionsForClaude = trackFiltered.length >= 20 ? trackFiltered : filteredSessions
+  let sessionsForClaude = trackFiltered.length >= 20 ? trackFiltered : filteredSessions
+
+  // Cap at 300 sessions to control costs — prioritize by relevance
+  if (sessionsForClaude.length > 300) {
+    const trackMatched = sessionsForClaude.filter((s) =>
+      preferences.interests.some((interest) =>
+        s.track.toLowerCase().includes(interest.toLowerCase()) ||
+        interest.toLowerCase().includes(s.track.toLowerCase())
+      )
+    )
+    const others = sessionsForClaude.filter((s) => !trackMatched.includes(s))
+    sessionsForClaude = [...trackMatched.slice(0, 200), ...others.slice(0, 100)]
+  }
 
   const sessionsForPrompt = sessionsForClaude.map((s) => ({
     id: s.id,
     title: s.title,
-    description: s.description,
     track: s.track,
-    type: s.type,
     format: s.format,
     date: s.date,
     startTime: s.startTime,
     endTime: s.endTime,
     venue: s.venue,
-    tags: s.tags,
   }))
 
   const client = getClient()
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 4096,
-    system: `You are a SXSW 2026 schedule builder. Given user preferences and available sessions, select 6-10 sessions per day that best match the user's interests and vibe. For each time slot, pick a clear top choice and include 1-2 alternatives. Avoid scheduling more than 3 sessions in the same time slot. Respond with valid JSON only — no markdown, no explanation, no code fences.
+    system: [
+      {
+        type: 'text',
+        text: `You are a SXSW 2026 schedule builder. Given user preferences and available sessions, select 6-10 sessions per day that best match the user's interests and vibe. For each time slot, pick a clear top choice and include 1-2 alternatives. Avoid scheduling more than 3 sessions in the same time slot. Respond with valid JSON only — no markdown, no explanation, no code fences.
 
 Each session needs a priority:
 - 1 = Top pick for this time slot (at most one per time slot)
@@ -77,18 +89,23 @@ Response format:
     ]
   }
 ]`,
+        cache_control: { type: 'ephemeral' },
+      },
+    ],
     messages: [
       {
         role: 'user',
-        content: `Build a SXSW schedule for ${preferences.name}.
-
-Interests: ${preferences.interests.join(', ')}
-Vibes: ${preferences.vibes.join(', ')}
-Days attending: ${preferences.days.join(', ')}
-${preferences.freeText ? `Additional notes: ${preferences.freeText}` : ''}
-
-Available sessions:
-${JSON.stringify(sessionsForPrompt)}`,
+        content: [
+          {
+            type: 'text',
+            text: `Available sessions:\n${JSON.stringify(sessionsForPrompt)}`,
+            cache_control: { type: 'ephemeral' },
+          },
+          {
+            type: 'text',
+            text: `Build a SXSW schedule for ${preferences.name}.\n\nInterests: ${preferences.interests.join(', ')}\nVibes: ${preferences.vibes.join(', ')}\nDays attending: ${preferences.days.join(', ')}\n${preferences.freeText ? `Additional notes: ${preferences.freeText}` : ''}`,
+          },
+        ],
       },
     ],
   })
@@ -145,23 +162,27 @@ export async function refineSchedule(
     })),
   }))
 
-  const availableSessions = sessions
+  let availableSessions = sessions
     .filter((s) => {
       if (!schedule.preferences.days.includes(s.date)) return false
       if (schedule.preferences.badge && !s.badgeTypes.includes(schedule.preferences.badge)) return false
       return true
     })
-    .map((s) => ({
-      id: s.id,
-      title: s.title,
-      description: s.description,
-      track: s.track,
-      format: s.format,
-      date: s.date,
-      startTime: s.startTime,
-      endTime: s.endTime,
-      tags: s.tags,
-    }))
+
+  // Cap at 500 sessions to control costs
+  if (availableSessions.length > 500) {
+    availableSessions = availableSessions.slice(0, 500)
+  }
+
+  const availableSessionsForPrompt = availableSessions.map((s) => ({
+    id: s.id,
+    title: s.title,
+    track: s.track,
+    format: s.format,
+    date: s.date,
+    startTime: s.startTime,
+    endTime: s.endTime,
+  }))
 
   const chatHistory = schedule.chatHistory.map((m) => ({
     role: m.role as 'user' | 'assistant',
@@ -172,7 +193,10 @@ export async function refineSchedule(
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 16384,
-    system: `You are a SXSW 2026 schedule assistant helping ${schedule.name} refine their schedule. The user wants changes. Update the schedule based on their request.
+    system: [
+      {
+        type: 'text',
+        text: `You are a SXSW 2026 schedule assistant helping ${schedule.name} refine their schedule. The user wants changes. Update the schedule based on their request.
 
 IMPORTANT: If the user asks for ALL sessions of a certain type (e.g. "all films", "every music session"), include ALL matching sessions from the available sessions list — do not limit to 6-10. For normal refinement requests, keep 6-10 sessions per day.
 
@@ -201,7 +225,10 @@ Current schedule:
 ${JSON.stringify(currentScheduleSummary)}
 
 Available sessions (you can swap in any of these):
-${JSON.stringify(availableSessions)}`,
+${JSON.stringify(availableSessionsForPrompt)}`,
+        cache_control: { type: 'ephemeral' },
+      },
+    ],
     messages: [
       ...chatHistory,
       { role: 'user' as const, content: userMessage },
