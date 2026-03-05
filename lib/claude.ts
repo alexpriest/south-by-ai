@@ -15,6 +15,7 @@ interface ClaudeScheduleDay {
   sessions: {
     id: string
     reason: string
+    priority: number
   }[]
 }
 
@@ -57,15 +58,20 @@ export async function generateSchedule(
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 4096,
-    system: `You are a SXSW 2026 schedule builder. Given user preferences and available sessions, select 4-6 sessions per day that best match the user's interests and vibe. Avoid time conflicts. Respond with valid JSON only — no markdown, no explanation, no code fences.
+    system: `You are a SXSW 2026 schedule builder. Given user preferences and available sessions, select 6-10 sessions per day that best match the user's interests and vibe. For each time slot, pick a clear top choice and include 1-2 alternatives. Avoid scheduling more than 3 sessions in the same time slot. Respond with valid JSON only — no markdown, no explanation, no code fences.
+
+Each session needs a priority:
+- 1 = Top pick for this time slot (at most one per time slot)
+- 2 = Good alternative
+- 3 = Worth considering
 
 Response format:
 [
   {
     "date": "YYYY-MM-DD",
-    "label": "Day Label (e.g. Saturday Mar 7)",
+    "label": "Day Label (e.g. Saturday Mar 14)",
     "sessions": [
-      { "id": "session_id", "reason": "Brief reason why this session matches the user" }
+      { "id": "session_id", "reason": "Brief reason why this session matches the user", "priority": 1 }
     ]
   }
 ]`,
@@ -102,7 +108,7 @@ ${JSON.stringify(sessionsForPrompt)}`,
       .map((pick) => {
         const session = sessionMap.get(pick.id)
         if (!session) return null
-        return { ...session, reason: pick.reason } as ScheduleSession
+        return { ...session, reason: pick.reason, priority: pick.priority || 2 } as ScheduleSession
       })
       .filter((s): s is ScheduleSession => s !== null),
   }))
@@ -155,6 +161,11 @@ export async function refineSchedule(
     max_tokens: 4096,
     system: `You are a SXSW 2026 schedule assistant helping ${schedule.name} refine their schedule. The user wants changes. Update the schedule based on their request.
 
+Each session needs a priority:
+- 1 = Top pick for this time slot (at most one per time slot)
+- 2 = Good alternative
+- 3 = Worth considering
+
 Respond with valid JSON only — no markdown, no code fences. Use this format:
 {
   "reply": "A short, conversational message about what you changed (1-2 sentences, casual tone)",
@@ -163,7 +174,7 @@ Respond with valid JSON only — no markdown, no code fences. Use this format:
       "date": "YYYY-MM-DD",
       "label": "Day Label",
       "sessions": [
-        { "id": "session_id", "reason": "Why this session is included" }
+        { "id": "session_id", "reason": "Why this session is included", "priority": 1 }
       ]
     }
   ]
@@ -197,7 +208,7 @@ ${JSON.stringify(availableSessions)}`,
       .map((pick) => {
         const session = sessionMap.get(pick.id)
         if (!session) return null
-        return { ...session, reason: pick.reason } as ScheduleSession
+        return { ...session, reason: pick.reason, priority: pick.priority || 2 } as ScheduleSession
       })
       .filter((s): s is ScheduleSession => s !== null),
   }))

@@ -18,6 +18,7 @@ export interface Session {
 
 export interface ScheduleSession extends Session {
   reason: string
+  priority: number
 }
 
 export interface QuizState {
