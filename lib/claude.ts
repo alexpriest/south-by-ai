@@ -65,6 +65,8 @@ Each session needs a priority:
 - 2 = Good alternative
 - 3 = Worth considering
 
+When choosing between sessions of similar quality in the same time slot, prefer sessions at the same venue or nearby venues to minimize walking. Austin Convention Center, Fairmont Austin, Hilton Austin, and JW Marriott are all within a 5-minute walk of each other. Palmer Events Center and Long Center are nearby each other but 15 minutes from the Convention Center. Venues on 6th Street (Mohawk, Stubbs, Empire Control Room, Antone's, Esther's Follies, Paramount Theatre) are clustered together. Avoid scheduling back-to-back sessions at distant venues when possible.
+
 Response format:
 [
   {
@@ -178,6 +180,8 @@ Each session needs a priority:
 - 1 = Top pick for this time slot (at most one per time slot)
 - 2 = Good alternative
 - 3 = Worth considering
+
+When choosing between sessions of similar quality in the same time slot, prefer sessions at the same venue or nearby venues to minimize walking. Austin Convention Center, Fairmont Austin, Hilton Austin, and JW Marriott are all within a 5-minute walk of each other. Palmer Events Center and Long Center are nearby each other but 15 minutes from the Convention Center. Venues on 6th Street (Mohawk, Stubbs, Empire Control Room, Antone's, Esther's Follies, Paramount Theatre) are clustered together. Avoid scheduling back-to-back sessions at distant venues when possible.
 
 Respond with valid JSON only — no markdown, no code fences. Use this format:
 {
