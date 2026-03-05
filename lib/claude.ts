@@ -22,11 +22,24 @@ export async function generateSchedule(
   preferences: QuizState,
   sessions: Session[]
 ): Promise<DaySchedule[]> {
-  const filteredSessions = sessions.filter((s) =>
-    preferences.days.includes(s.date)
+  const filteredSessions = sessions.filter((s) => {
+    if (!preferences.days.includes(s.date)) return false
+    if (preferences.badge && !s.badgeTypes.includes(preferences.badge)) return false
+    return true
+  })
+
+  // Further filter by selected tracks to reduce token count
+  const trackFiltered = filteredSessions.filter((s) =>
+    preferences.interests.some((interest) =>
+      s.track.toLowerCase().includes(interest.toLowerCase()) ||
+      interest.toLowerCase().includes(s.track.toLowerCase())
+    )
   )
 
-  const sessionsForPrompt = filteredSessions.map((s) => ({
+  // Use track-filtered if it has enough sessions, otherwise fall back to all badge-filtered
+  const sessionsForClaude = trackFiltered.length >= 20 ? trackFiltered : filteredSessions
+
+  const sessionsForPrompt = sessionsForClaude.map((s) => ({
     id: s.id,
     title: s.title,
     description: s.description,
@@ -80,7 +93,7 @@ ${JSON.stringify(sessionsForPrompt)}`,
     throw new Error('Failed to parse schedule from AI response')
   }
 
-  const sessionMap = new Map(filteredSessions.map((s) => [s.id, s]))
+  const sessionMap = new Map(sessionsForClaude.map((s) => [s.id, s]))
 
   return parsed.map((day) => ({
     date: day.date,
@@ -114,7 +127,11 @@ export async function refineSchedule(
   }))
 
   const availableSessions = sessions
-    .filter((s) => schedule.preferences.days.includes(s.date))
+    .filter((s) => {
+      if (!schedule.preferences.days.includes(s.date)) return false
+      if (schedule.preferences.badge && !s.badgeTypes.includes(schedule.preferences.badge)) return false
+      return true
+    })
     .map((s) => ({
       id: s.id,
       title: s.title,

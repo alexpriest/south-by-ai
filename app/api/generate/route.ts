@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json() as QuizState
 
-    if (!body.name?.trim() || !body.interests?.length || !body.days?.length) {
+    if (!body.name?.trim() || !body.badge || !body.interests?.length || !body.days?.length) {
       return NextResponse.json(
         { error: 'Missing required quiz fields' },
         { status: 400 }
