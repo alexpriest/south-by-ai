@@ -1,10 +1,6 @@
 'use client'
 
 const DAYS = [
-  { id: '2026-03-08', label: 'Sun Mar 8' },
-  { id: '2026-03-09', label: 'Mon Mar 9' },
-  { id: '2026-03-10', label: 'Tue Mar 10' },
-  { id: '2026-03-11', label: 'Wed Mar 11' },
   { id: '2026-03-12', label: 'Thu Mar 12' },
   { id: '2026-03-13', label: 'Fri Mar 13' },
   { id: '2026-03-14', label: 'Sat Mar 14' },
