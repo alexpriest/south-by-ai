@@ -8,9 +8,10 @@ interface TimelineBlockProps {
   style: React.CSSProperties
   isTopPick?: boolean
   onClick?: () => void
+  onSwap?: () => void
 }
 
-export function TimelineBlock({ session, style, isTopPick, onClick }: TimelineBlockProps) {
+export function TimelineBlock({ session, style, isTopPick, onClick, onSwap }: TimelineBlockProps) {
   const trackColor = getTrackColor(session.track)
   const isAlternative = !isTopPick && (session.priority || 2) >= 2
 
@@ -26,6 +27,17 @@ export function TimelineBlock({ session, style, isTopPick, onClick }: TimelineBl
         isAlternative ? 'opacity-60 hover:opacity-90' : ''
       }`}
     >
+      {onSwap && !isTopPick && (session.priority || 2) >= 2 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onSwap(); }}
+          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 p-1 rounded-full bg-primary/20 hover:bg-primary/30 transition-all z-10"
+          title="Make this your top pick"
+        >
+          <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
+      )}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-[11px] text-muted leading-none">

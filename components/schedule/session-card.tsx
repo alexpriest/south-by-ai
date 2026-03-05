@@ -4,9 +4,10 @@ import { getSpeakerUrl } from '@/lib/speaker-url'
 
 interface SessionCardProps {
   session: ScheduleSession
+  onSwap?: () => void
 }
 
-export function SessionCard({ session }: SessionCardProps) {
+export function SessionCard({ session, onSwap }: SessionCardProps) {
   const isTopPick = (session.priority || 2) === 1
   const isAlt = (session.priority || 2) >= 3
 
@@ -70,9 +71,20 @@ export function SessionCard({ session }: SessionCardProps) {
             </p>
           )}
         </div>
-        <svg className="w-4 h-4 text-muted/40 group-hover:text-muted transition-colors shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-        </svg>
+        <div className="flex items-center gap-2 shrink-0 mt-1">
+          {onSwap && (session.priority || 2) >= 2 && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSwap(); }}
+              className="text-xs text-primary hover:text-primary/80 font-medium transition-colors shrink-0"
+              title="Make this your top pick"
+            >
+              Promote
+            </button>
+          )}
+          <svg className="w-4 h-4 text-muted/40 group-hover:text-muted transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </div>
       </div>
     </a>
   )

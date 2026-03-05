@@ -3,9 +3,10 @@ import { SessionCard } from './session-card'
 
 interface DayViewProps {
   day: DaySchedule
+  onSwap?: (sessionId: string) => void
 }
 
-export function DayView({ day }: DayViewProps) {
+export function DayView({ day, onSwap }: DayViewProps) {
   if (day.sessions.length === 0) {
     return (
       <p className="text-muted text-center py-12">
@@ -17,7 +18,7 @@ export function DayView({ day }: DayViewProps) {
   return (
     <div className="flex flex-col gap-3.5">
       {day.sessions.map((session) => (
-        <SessionCard key={session.id} session={session} />
+        <SessionCard key={session.id} session={session} onSwap={onSwap ? () => onSwap(session.id) : undefined} />
       ))}
     </div>
   )

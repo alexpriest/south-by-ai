@@ -13,11 +13,24 @@ interface ScheduleViewProps {
 }
 
 export function ScheduleView({ schedule }: ScheduleViewProps) {
+  const [currentSchedule, setCurrentSchedule] = useState(schedule)
   const [activeDayIndex, setActiveDayIndex] = useState(0)
   const [viewMode, setViewMode] = useState<'timeline' | 'list' | 'map'>('timeline')
-  const activeDay = schedule.days[activeDayIndex]
+  const activeDay = currentSchedule.days[activeDayIndex]
 
-  const dayLabels = schedule.days.map((d) => {
+  const handleSwap = async (dayDate: string, sessionId: string) => {
+    const res = await fetch(`/api/schedule/${currentSchedule.id}/swap`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dayDate, sessionId }),
+    })
+    if (res.ok) {
+      const { schedule: updated } = await res.json()
+      setCurrentSchedule(updated)
+    }
+  }
+
+  const dayLabels = currentSchedule.days.map((d) => {
     const date = new Date(d.date + 'T12:00:00')
     const day = date.toLocaleDateString('en-US', { weekday: 'short' })
     return `${day} ${date.getDate()}`
@@ -32,7 +45,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
             <div>
               <p className="text-xs text-accent uppercase tracking-wider mb-1">SXSW 2026</p>
               <h1 className="font-heading text-3xl font-bold">
-                {schedule.name}&apos;s SXSW Schedule
+                {currentSchedule.name}&apos;s SXSW Schedule
               </h1>
             </div>
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -80,7 +93,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                 </button>
               </div>
               <a
-                href={`/api/calendar/${schedule.id}`}
+                href={`/api/calendar/${currentSchedule.id}`}
                 download="sxsw-schedule.ics"
                 className="group flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm text-muted border border-white/10 hover:border-white/20 hover:text-text transition-all duration-200"
                 title="Download schedule as calendar file"
@@ -90,9 +103,9 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                 </svg>
                 Export
               </a>
-              <ShareButton scheduleId={schedule.id} />
+              <ShareButton scheduleId={currentSchedule.id} />
               <Link
-                href={`/s/${schedule.id}/refine`}
+                href={`/s/${currentSchedule.id}/refine`}
                 className="bg-primary text-white rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-primary/90 transition-colors"
               >
                 Refine with AI
@@ -124,7 +137,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
             Browse All Sessions on SXSW &rarr;
           </a>
         </div>
-        {schedule.days.length > 0 && (
+        {currentSchedule.days.length > 0 && (
           <>
             {/* Day tabs */}
             <nav aria-label="Schedule days" className="flex gap-1.5 mb-8 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
@@ -146,10 +159,10 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
 
             {activeDay && (
               viewMode === 'timeline'
-                ? <TimelineView day={activeDay} />
+                ? <TimelineView day={activeDay} onSwap={(sessionId) => handleSwap(activeDay.date, sessionId)} />
                 : viewMode === 'map'
                 ? <MapView day={activeDay} />
-                : <DayView day={activeDay} />
+                : <DayView day={activeDay} onSwap={(sessionId) => handleSwap(activeDay.date, sessionId)} />
             )}
           </>
         )}

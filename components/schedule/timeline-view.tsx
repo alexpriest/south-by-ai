@@ -7,6 +7,7 @@ import { SessionPopover } from './session-popover'
 
 interface TimelineViewProps {
   day: DaySchedule
+  onSwap?: (sessionId: string) => void
 }
 
 const START_HOUR = 9
@@ -59,7 +60,7 @@ function isSXSWDate(dateStr: string): boolean {
 
 const hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i)
 
-export function TimelineView({ day }: TimelineViewProps) {
+export function TimelineView({ day, onSwap }: TimelineViewProps) {
   const [popover, setPopover] = useState<{ session: ScheduleSession; rect: DOMRect } | null>(null)
 
   if (day.sessions.length === 0) {
@@ -159,6 +160,7 @@ export function TimelineView({ day }: TimelineViewProps) {
                     setPopover({ session, rect: el.getBoundingClientRect() })
                   }
                 }}
+                onSwap={onSwap ? () => onSwap(session.id) : undefined}
                 style={{
                   top: `${top}%`,
                   height: `${height}%`,
