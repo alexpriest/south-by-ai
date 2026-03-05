@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 40" height="40">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700');
+    text { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 28px; }
+  </style>
+  <text x="0" y="30" fill="#F5F5F5">SOUTH BY </text>
+  <text x="215" y="30" fill="#FF6B35">AI</text>
+</svg>
