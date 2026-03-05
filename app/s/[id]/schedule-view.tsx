@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { DayView } from '@/components/schedule/day-view'
 import { TimelineView } from '@/components/schedule/timeline-view'
+import { MapView } from '@/components/schedule/map-view'
 import { ShareButton } from '@/components/schedule/share-button'
 import type { StoredSchedule } from '@/lib/types'
 
@@ -13,7 +14,7 @@ interface ScheduleViewProps {
 
 export function ScheduleView({ schedule }: ScheduleViewProps) {
   const [activeDayIndex, setActiveDayIndex] = useState(0)
-  const [viewMode, setViewMode] = useState<'timeline' | 'list'>('timeline')
+  const [viewMode, setViewMode] = useState<'timeline' | 'list' | 'map'>('timeline')
   const activeDay = schedule.days[activeDayIndex]
 
   const dayLabels = schedule.days.map((d) => {
@@ -64,6 +65,17 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                   List
                 </button>
               </div>
+              <a
+                href={`/api/calendar/${schedule.id}`}
+                download="sxsw-schedule.ics"
+                className="group flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm text-muted border border-white/10 hover:border-white/20 hover:text-text transition-all duration-200"
+                title="Download schedule as calendar file"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Export
+              </a>
               <ShareButton scheduleId={schedule.id} />
               <Link
                 href={`/s/${schedule.id}/refine`}
@@ -73,9 +85,13 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
               </Link>
               <Link
                 href="/"
-                className="text-sm text-muted hover:text-text transition-colors"
+                className="group flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm text-muted border border-white/10 hover:border-white/20 hover:text-text transition-all duration-200"
+                title="Start over with a new quiz"
               >
-                Start Over
+                <svg className="w-3.5 h-3.5 group-hover:-rotate-180 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                New
               </Link>
             </div>
           </div>

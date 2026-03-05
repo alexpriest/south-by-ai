@@ -169,8 +169,10 @@ export async function refineSchedule(
   const client = getClient()
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
+    max_tokens: 16384,
     system: `You are a SXSW 2026 schedule assistant helping ${schedule.name} refine their schedule. The user wants changes. Update the schedule based on their request.
+
+IMPORTANT: If the user asks for ALL sessions of a certain type (e.g. "all films", "every music session"), include ALL matching sessions from the available sessions list — do not limit to 6-10. For normal refinement requests, keep 6-10 sessions per day.
 
 Each session needs a priority:
 - 1 = Top pick for this time slot (at most one per time slot)
