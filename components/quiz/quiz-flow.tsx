@@ -42,7 +42,7 @@ export function QuizFlow() {
     name: '',
     badge: '',
     interests: [],
-    vibe: '',
+    vibes: [],
     days: [],
     freeText: '',
   })
@@ -57,7 +57,7 @@ export function QuizFlow() {
       case 'name': return quiz.name.trim().length > 0
       case 'badge': return quiz.badge.length > 0
       case 'interests': return quiz.interests.length > 0
-      case 'vibe': return quiz.vibe.length > 0
+      case 'vibe': return quiz.vibes.length > 0
       case 'days': return quiz.days.length > 0
       case 'freeText': return true
     }
@@ -171,7 +171,7 @@ export function QuizFlow() {
           <InterestChips selected={quiz.interests} onChange={(interests) => setQuiz({ ...quiz, interests })} />
         )}
         {step === 'vibe' && (
-          <VibeSelect selected={quiz.vibe} onChange={(vibe) => setQuiz({ ...quiz, vibe })} />
+          <VibeSelect selected={quiz.vibes} onChange={(vibes) => setQuiz({ ...quiz, vibes })} />
         )}
         {step === 'days' && (
           <DayPicker selected={quiz.days} onChange={(days) => setQuiz({ ...quiz, days })} />
@@ -190,7 +190,7 @@ export function QuizFlow() {
         {!isFirst && (
           <button
             onClick={back}
-            className="bg-white/10 text-white rounded-full px-6 py-2.5 hover:bg-white/20 active:bg-white/25 transition-all duration-200"
+            className="bg-black/5 dark:bg-white/10 text-text rounded-full px-6 py-2.5 hover:bg-black/10 dark:hover:bg-white/20 transition-all duration-200"
           >
             Back
           </button>

@@ -33,7 +33,7 @@ export function SessionPopover({ session, anchorRect, onClose }: SessionPopoverP
   }, [onClose])
 
   // Position: below block by default, flip above if not enough space
-  const popoverWidth = 360
+  const popoverWidth = Math.min(360, window.innerWidth - 16)
   const gap = 8
   const spaceBelow = window.innerHeight - anchorRect.bottom
   const placeAbove = spaceBelow < 280 && anchorRect.top > 280
@@ -56,7 +56,7 @@ export function SessionPopover({ session, anchorRect, onClose }: SessionPopoverP
     <div
       ref={ref}
       style={style}
-      className="popover-enter bg-[#1a1a1a] border border-white/15 rounded-xl shadow-xl overflow-y-auto p-5"
+      className="popover-enter bg-white dark:bg-[#1a1a1a] border border-black/10 dark:border-white/15 rounded-xl shadow-xl overflow-y-auto p-5"
     >
       <p className="text-xs text-muted">
         {session.startTime} &ndash; {session.endTime}

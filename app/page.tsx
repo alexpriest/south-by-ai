@@ -22,7 +22,7 @@ export default function Home() {
             3,700+ sessions. You&apos;re not reading all those descriptions. Take a 60-second quiz and get a SXSW schedule you&apos;ll actually follow.
           </p>
           <a
-            href="https://schedule.sxsw.com/2026/schedule"
+            href="https://schedule.sxsw.com/2026/search/event"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-muted hover:text-accent transition-colors underline underline-offset-2"
@@ -38,8 +38,19 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-white/5 py-8 text-center text-xs text-muted/60">
-        <p>Built with Claude by South by AI</p>
-        <p className="mt-1">
+        <p>
+          Built by{' '}
+          <a href="https://alexpriest.com" target="_blank" rel="noopener noreferrer" className="text-muted/80 hover:text-accent transition-colors underline underline-offset-2">
+            Alex Priest
+          </a>
+          {' '}with Claude
+        </p>
+        <p className="mt-2">
+          <a href="https://buymeacoffee.com/alexpriest" target="_blank" rel="noopener noreferrer" className="text-muted/80 hover:text-accent transition-colors underline underline-offset-2">
+            Buy me a coffee
+          </a>
+        </p>
+        <p className="mt-2">
           Not affiliated with or endorsed by SXSW LLC. Session data from the public SXSW schedule.
         </p>
       </footer>

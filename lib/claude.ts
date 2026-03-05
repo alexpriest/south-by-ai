@@ -81,7 +81,7 @@ Response format:
         content: `Build a SXSW schedule for ${preferences.name}.
 
 Interests: ${preferences.interests.join(', ')}
-Vibe: ${preferences.vibe}
+Vibes: ${preferences.vibes.join(', ')}
 Days attending: ${preferences.days.join(', ')}
 ${preferences.freeText ? `Additional notes: ${preferences.freeText}` : ''}
 

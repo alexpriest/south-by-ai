@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Space_Grotesk } from 'next/font/google'
+import { ThemeToggle } from '@/components/theme-toggle'
 import './globals.css'
 
 const inter = Inter({
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
   description: '60-second quiz. Personalized SXSW 2026 schedule built by AI. No more tab overload.',
   openGraph: {
     title: 'South by AI — AI-Powered SXSW Schedule Builder',
-    description: '850+ sessions. One quiz. Your SXSW schedule, built by AI in seconds.',
+    description: '3,700+ sessions. One quiz. Your SXSW schedule, built by AI in seconds.',
   },
 }
 
@@ -29,8 +30,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
-      <body className={`${inter.className} bg-background text-text min-h-screen`}>{children}</body>
+    <html lang="en" className={`dark ${inter.variable} ${spaceGrotesk.variable}`}>
+      <body className={`${inter.className} bg-background text-text min-h-screen`}>
+        <ThemeToggle />
+        {children}
+      </body>
     </html>
   )
 }

@@ -25,7 +25,7 @@ export interface QuizState {
   name: string
   badge: string
   interests: string[]
-  vibe: string
+  vibes: string[]
   days: string[]
   freeText: string
 }
