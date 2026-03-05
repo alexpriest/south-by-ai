@@ -79,12 +79,14 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">
         <div className="flex justify-end mb-4">
-          <Link
-            href="/browse"
+          <a
+            href="https://schedule.sxsw.com/2026/schedule"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-sm text-muted hover:text-accent transition-colors"
           >
-            Browse All Sessions &rarr;
-          </Link>
+            Browse All Sessions on SXSW &rarr;
+          </a>
         </div>
         {schedule.days.length > 0 && (
           <>

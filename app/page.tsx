@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { QuizFlow } from '@/components/quiz/quiz-flow'
 
 export default function Home() {
@@ -20,14 +19,16 @@ export default function Home() {
             Tell us what you&apos;re into. AI builds your schedule. No more 47 open tabs.
           </p>
           <p className="text-sm text-muted/70 max-w-lg mx-auto mb-4">
-            850+ sessions. You&apos;re not reading all those descriptions. Take a 60-second quiz and get a SXSW schedule you&apos;ll actually follow.
+            3,700+ sessions. You&apos;re not reading all those descriptions. Take a 60-second quiz and get a SXSW schedule you&apos;ll actually follow.
           </p>
-          <Link
-            href="/browse"
+          <a
+            href="https://schedule.sxsw.com/2026/schedule"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-sm text-muted hover:text-accent transition-colors underline underline-offset-2"
           >
-            Or browse all sessions by category
-          </Link>
+            Or browse all sessions on sxsw.com
+          </a>
         </div>
       </section>
 
