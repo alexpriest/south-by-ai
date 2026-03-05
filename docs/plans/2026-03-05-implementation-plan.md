@@ -10,7 +10,9 @@
 
 **Working Directory:** `~/Code/projects/south-by-ai`
 
-**Environment:** `.env.local` already contains `KV_REST_API_URL`, `KV_REST_API_TOKEN`, and other Vercel KV vars. `ANTHROPIC_API_KEY` is in the shell environment. The Vercel project `south-by-ai` is already linked.
+**Environment:** `.env.local` already contains `KV_REST_API_URL`, `KV_REST_API_TOKEN`, and other Vercel KV vars. `ANTHROPIC_API_KEY` is in the shell environment (and must be added to `.env.local` for the app's runtime Claude calls). The Vercel project `south-by-ai` is already linked.
+
+**Cost model:** All Claude Code agents run on Alex's Max plan — no API credits consumed for the build. The only API cost is the app's runtime calls to Claude (schedule generation + refinement), which use the `ANTHROPIC_API_KEY` in `.env.local`. This is minimal during development (~10-20 test calls).
 
 ---
 
