@@ -93,6 +93,13 @@ body {
 :root:not(.dark) .skeleton-pulse {
   background: black !important;
 }
+/* AI commentary — accent is too bright on light backgrounds */
+:root:not(.dark) .text-accent\/80 {
+  color: #059669 !important; /* emerald-600, readable on white */
+}
+:root:not(.dark) .text-accent\/70 {
+  color: #059669 !important;
+}
 
 /* Glass card — works in both light and dark */
 .glass {

@@ -16,7 +16,9 @@ export default function Home() {
             <span className="text-text">Actually Planned</span>
           </h1>
           <p className="text-lg md:text-xl text-muted max-w-xl mx-auto mb-3">
-            Tell us what you&apos;re into. AI builds your schedule. No more 47 open tabs.
+            Tell us what you&apos;re into. AI builds your schedule.
+            <br className="hidden md:block" />
+            {' '}No more 47 open tabs.
           </p>
           <p className="text-sm text-muted/70 max-w-lg mx-auto mb-4">
             3,700+ sessions. You&apos;re not reading all those descriptions. Take a 60-second quiz and get a SXSW schedule you&apos;ll actually follow.
@@ -27,7 +29,7 @@ export default function Home() {
             rel="noopener noreferrer"
             className="text-sm text-muted hover:text-accent transition-colors underline underline-offset-2"
           >
-            Or browse all sessions on sxsw.com
+            Or browse all sessions on sxsw.com.
           </a>
         </div>
       </section>
@@ -43,7 +45,7 @@ export default function Home() {
           <a href="https://alexpriest.com" target="_blank" rel="noopener noreferrer" className="text-muted/80 hover:text-accent transition-colors underline underline-offset-2">
             Alex Priest
           </a>
-          {' '}with Claude Code
+          {' '}with Claude Code.
         </p>
         <p className="mt-2">
           <a href="https://buymeacoffee.com/alexpriest" target="_blank" rel="noopener noreferrer" className="text-muted/80 hover:text-accent transition-colors underline underline-offset-2">

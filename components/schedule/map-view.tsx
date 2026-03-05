@@ -25,6 +25,7 @@ export function MapView({ day }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [loaded, setLoaded] = useState(false)
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
+  const [hasMarkers, setHasMarkers] = useState(true)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -72,65 +73,79 @@ export function MapView({ day }: MapViewProps) {
       maxZoom: 19,
     }).addTo(map)
 
-    // Filter sessions
+    // Filter sessions by time
     const filtered = day.sessions.filter((s) => {
       if (timeFilter !== 'all' && getTimeFilter(s) !== timeFilter) return false
       return getVenueCoords(s.venue) !== null
     })
 
-    // Sort by start time for route
+    // Sort by start time
     const sorted = [...filtered].sort((a, b) => a.startTime.localeCompare(b.startTime))
 
-    // Add markers
-    const routePoints: [number, number][] = []
-
+    // Group sessions by venue coordinates
+    const venueGroups = new Map<string, ScheduleSession[]>()
     sorted.forEach((session) => {
       const coords = getVenueCoords(session.venue)
       if (!coords) return
+      const key = `${coords.lat},${coords.lng}`
+      if (!venueGroups.has(key)) venueGroups.set(key, [])
+      venueGroups.get(key)!.push(session)
+    })
 
-      const color = getTrackColor(session.track)
-      const isTopPick = session.priority === 1
-      const radius = isTopPick ? 10 : 6
-      const opacity = isTopPick ? 0.9 : 0.5
-      const fillOpacity = isTopPick ? 0.8 : 0.4
+    // Add one marker per venue with multi-session popup
+    const routePoints: [number, number][] = []
 
-      const marker = L.circleMarker([coords.lat, coords.lng], {
+    venueGroups.forEach((sessions, key) => {
+      const [lat, lng] = key.split(',').map(Number)
+      const bestPriority = Math.min(...sessions.map(s => s.priority || 2))
+      const isTopPick = bestPriority === 1
+      const firstColor = getTrackColor(sessions[0].track)
+      const radius = isTopPick ? 10 : 7
+      const opacity = isTopPick ? 0.9 : 0.6
+      const fillOpacity = isTopPick ? 0.8 : 0.5
+
+      const marker = L.circleMarker([lat, lng], {
         radius,
-        color,
-        fillColor: color,
+        color: firstColor,
+        fillColor: firstColor,
         fillOpacity,
         opacity,
         weight: 2,
         className: isTopPick ? 'pulse-marker' : '',
       }).addTo(map)
 
-      const popupContent = `
-        <div style="font-family: Inter, sans-serif; min-width: 200px;">
-          <strong style="font-size: 14px;">${session.title}</strong>
-          <div style="margin-top: 6px; font-size: 12px; color: #999;">
-            ${session.startTime} - ${session.endTime}
-          </div>
-          <div style="margin-top: 4px; font-size: 12px; color: #999;">
-            ${session.venue}
-          </div>
-          <div style="margin-top: 6px;">
-            <span style="display: inline-block; background: ${color}22; color: ${color}; padding: 2px 8px; border-radius: 12px; font-size: 11px;">
-              ${session.track}
+      const venueName = sessions[0].venue.split(',').pop()?.trim() || sessions[0].venue
+      const popupHtml = sessions.map((s, i) => {
+        const color = getTrackColor(s.track)
+        return `
+          <div style="padding: 8px 0;${i > 0 ? ' border-top: 1px solid #333;' : ''}">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              ${s.priority === 1 ? '<span style="color: #FF6B35;">&#9733;</span>' : ''}
+              <strong style="font-size: 13px;">${s.title}</strong>
+            </div>
+            <div style="font-size: 11px; color: #999; margin-top: 4px;">
+              ${s.startTime} &ndash; ${s.endTime}
+            </div>
+            <span style="display: inline-block; background: ${color}22; color: ${color}; padding: 1px 6px; border-radius: 8px; font-size: 10px; margin-top: 4px;">
+              ${s.track}
             </span>
           </div>
-          ${session.reason ? `<div style="margin-top: 8px; font-size: 12px; font-style: italic; color: #aaa;">${session.reason}</div>` : ''}
-          <div style="margin-top: 8px;">
-            <a href="${session.url}" target="_blank" rel="noopener noreferrer" style="color: #FF6B35; font-size: 12px; text-decoration: none;">
-              Open on SXSW &rarr;
-            </a>
-          </div>
+        `
+      }).join('')
+
+      const popupContent = `
+        <div style="font-family: Inter, sans-serif; min-width: 220px; max-height: 300px; overflow-y: auto;">
+          <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">${venueName}${sessions.length > 1 ? ` &middot; ${sessions.length} sessions` : ''}</div>
+          ${popupHtml}
         </div>
       `
 
-      marker.bindPopup(popupContent)
+      marker.bindPopup(popupContent, { maxWidth: 320 })
 
-      routePoints.push([coords.lat, coords.lng])
+      routePoints.push([lat, lng])
     })
+
+    setHasMarkers(routePoints.length > 0)
 
     // Draw walking route
     if (routePoints.length > 1) {
@@ -184,10 +199,17 @@ export function MapView({ day }: MapViewProps) {
 
       {/* Map container */}
       <div
-        className="rounded-xl overflow-hidden border border-white/10"
+        className="rounded-xl overflow-hidden border border-white/10 relative"
         style={{ height: 'calc(100vh - 300px)', minHeight: '400px' }}
       >
         <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+        {!hasMarkers && loaded && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <p className="text-muted text-center py-8 text-sm">
+              No mapped venues for this day&apos;s sessions.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Pulse animation */}
