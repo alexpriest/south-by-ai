@@ -1,46 +1,118 @@
+import { unstable_cache } from 'next/cache'
 import type { Session } from './types'
-import rawSessions from '@/data/sessions.json'
 
-interface RawSpeaker {
+interface SXSWSource {
   name: string
-  title: string
-  company: string
-}
-
-interface RawSession {
-  id: string
-  title: string
-  description: string
-  track: string
-  format: string
+  event_id: string
+  theme: string | null
+  event_type: string
+  format: string | null
   date: string
-  startTime: string
-  endTime: string
-  venue: string
-  speakers: RawSpeaker[]
-  url: string
-  tags: string[]
+  start_time: string
+  end_time: string
+  venue: { name: string; root: string } | null
+  panelists: string[]
+  links: { label: string; value: string }[]
+  thumbnail_url: string | null
+  primary_credentials: string[]
 }
 
-let cached: Session[] | null = null
-
-export function getSessions(): Session[] {
-  if (cached) return cached
-
-  cached = (rawSessions as RawSession[]).map((s) => ({
-    id: s.id,
-    title: s.title,
-    description: s.description,
-    track: s.track,
-    format: s.format,
-    date: s.date,
-    start_time: s.startTime,
-    end_time: s.endTime,
-    venue: s.venue,
-    speakers: s.speakers.map((sp) => sp.name),
-    url: s.url,
-    tags: s.tags,
-  }))
-
-  return cached
+interface SXSWHit {
+  _source: SXSWSource
 }
+
+interface SXSWResponse {
+  hits: SXSWHit[]
+}
+
+function toLocalTime(isoString: string): string {
+  const d = new Date(isoString)
+  return d.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'America/Chicago',
+  })
+}
+
+function toLocalDate(isoString: string): string {
+  const d = new Date(isoString)
+  return d.toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
+}
+
+function transformSession(hit: SXSWHit): Session {
+  const s = hit._source
+  const tags = s.links
+    .filter((l) => l.label === 'Tag')
+    .map((l) => l.value)
+
+  const venueName = s.venue
+    ? s.venue.name !== s.venue.root
+      ? `${s.venue.name}, ${s.venue.root}`
+      : s.venue.name
+    : ''
+
+  return {
+    id: s.event_id,
+    title: s.name,
+    description: '',
+    track: s.theme || 'General',
+    type: s.event_type,
+    format: s.format || s.event_type,
+    date: toLocalDate(s.start_time),
+    startTime: toLocalTime(s.start_time),
+    endTime: toLocalTime(s.end_time),
+    venue: venueName,
+    speakers: s.panelists || [],
+    url: `https://schedule.sxsw.com/2026/events/${s.event_id}`,
+    tags,
+    imageUrl: s.thumbnail_url || null,
+    badgeTypes: s.primary_credentials || [],
+  }
+}
+
+async function fetchSXSWEvents(): Promise<Session[]> {
+  const pageRes = await fetch('https://schedule.sxsw.com/2026/search/event', {
+    headers: { 'User-Agent': 'SouthByAI/1.0' },
+  })
+
+  const cookies = pageRes.headers.getSetCookie?.() || []
+  const sessionCookie = cookies
+    .find((c) => c.startsWith('_chronos_session='))
+    ?.split(';')[0] || ''
+
+  const pageHtml = await pageRes.text()
+  const csrfMatch = pageHtml.match(/csrf-token[^>]*content="([^"]*)"/)
+  const csrfToken = csrfMatch?.[1] || ''
+
+  if (!csrfToken || !sessionCookie) {
+    throw new Error('Failed to get SXSW session/CSRF token')
+  }
+
+  const searchRes = await fetch('https://schedule.sxsw.com/2026/search', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken,
+      'Cookie': sessionCookie,
+    },
+    body: JSON.stringify({
+      term: '',
+      filters: [],
+      models: ['event'],
+    }),
+  })
+
+  if (!searchRes.ok) {
+    throw new Error(`SXSW API returned ${searchRes.status}`)
+  }
+
+  const data: SXSWResponse = await searchRes.json()
+  return data.hits.map(transformSession)
+}
+
+export const getSessions = unstable_cache(
+  fetchSXSWEvents,
+  ['sxsw-sessions'],
+  { revalidate: 900 }
+)

@@ -45,7 +45,6 @@ export function RefineView({ schedule }: RefineViewProps) {
         <div className="max-w-2xl mx-auto w-full flex flex-col flex-1 min-h-0">
           <ChatInterface
             scheduleId={schedule.id}
-            name={schedule.name}
             initialMessages={initialMessages}
             onScheduleUpdate={() => router.refresh()}
           />

@@ -1,4 +1,6 @@
+import Link from 'next/link'
 import type { ScheduleSession } from '@/lib/types'
+import { getTrackColor } from '@/lib/track-colors'
 
 interface SessionCardProps {
   session: ScheduleSession
@@ -22,10 +24,17 @@ export function SessionCard({ session }: SessionCardProps) {
             <p className="text-sm text-muted mt-1.5 line-clamp-2">{session.description}</p>
           )}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-xs">
-            <span className="text-text/70">{session.start_time} – {session.end_time}</span>
+            <span className="text-text/70">{session.startTime} – {session.endTime}</span>
             {session.venue && <span className="text-muted">{session.venue}</span>}
             {session.track && (
-              <span className="text-accent font-medium">{session.track}</span>
+              <Link
+                href={`/browse/${encodeURIComponent(session.track)}`}
+                onClick={(e) => e.stopPropagation()}
+                className="font-medium hover:underline"
+                style={{ color: getTrackColor(session.track) }}
+              >
+                {session.track}
+              </Link>
             )}
           </div>
           {session.reason && (

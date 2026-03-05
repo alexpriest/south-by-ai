@@ -1,7 +1,6 @@
 'use client'
 
 const DAYS = [
-  { id: '2026-03-07', label: 'Sat Mar 7' },
   { id: '2026-03-08', label: 'Sun Mar 8' },
   { id: '2026-03-09', label: 'Mon Mar 9' },
   { id: '2026-03-10', label: 'Tue Mar 10' },
@@ -10,6 +9,9 @@ const DAYS = [
   { id: '2026-03-13', label: 'Fri Mar 13' },
   { id: '2026-03-14', label: 'Sat Mar 14' },
   { id: '2026-03-15', label: 'Sun Mar 15' },
+  { id: '2026-03-16', label: 'Mon Mar 16' },
+  { id: '2026-03-17', label: 'Tue Mar 17' },
+  { id: '2026-03-18', label: 'Wed Mar 18' },
 ]
 
 interface DayPickerProps {

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { DayView } from '@/components/schedule/day-view'
+import { TimelineView } from '@/components/schedule/timeline-view'
 import { ShareButton } from '@/components/schedule/share-button'
 import type { StoredSchedule } from '@/lib/types'
 
@@ -12,6 +13,7 @@ interface ScheduleViewProps {
 
 export function ScheduleView({ schedule }: ScheduleViewProps) {
   const [activeDayIndex, setActiveDayIndex] = useState(0)
+  const [viewMode, setViewMode] = useState<'timeline' | 'list'>('timeline')
   const activeDay = schedule.days[activeDayIndex]
 
   const dayLabels = schedule.days.map((d) => {
@@ -32,7 +34,36 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                 {schedule.name}&apos;s SXSW Schedule
               </h1>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-3">
+              {/* View toggle */}
+              <div className="flex rounded-full bg-white/5 p-1">
+                <button
+                  onClick={() => setViewMode('timeline')}
+                  className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
+                    viewMode === 'timeline'
+                      ? 'bg-white/10 text-text'
+                      : 'text-muted hover:text-text'
+                  }`}
+                >
+                  <svg className="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Timeline
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
+                    viewMode === 'list'
+                      ? 'bg-white/10 text-text'
+                      : 'text-muted hover:text-text'
+                  }`}
+                >
+                  <svg className="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                  List
+                </button>
+              </div>
               <ShareButton scheduleId={schedule.id} />
               <Link
                 href={`/s/${schedule.id}/refine`}
@@ -47,6 +78,14 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">
+        <div className="flex justify-end mb-4">
+          <Link
+            href="/browse"
+            className="text-sm text-muted hover:text-accent transition-colors"
+          >
+            Browse All Sessions &rarr;
+          </Link>
+        </div>
         {schedule.days.length > 0 && (
           <>
             {/* Day tabs */}
@@ -67,7 +106,11 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
               ))}
             </nav>
 
-            {activeDay && <DayView day={activeDay} />}
+            {activeDay && (
+              viewMode === 'timeline'
+                ? <TimelineView day={activeDay} />
+                : <DayView day={activeDay} />
+            )}
           </>
         )}
       </div>

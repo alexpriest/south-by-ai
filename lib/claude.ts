@@ -1,7 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { QuizState, Session, DaySchedule, StoredSchedule, ScheduleSession } from './types'
 
-const client = new Anthropic()
+function getClient() {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    throw new Error('ANTHROPIC_API_KEY is not set')
+  }
+  return new Anthropic({ apiKey })
+}
 
 interface ClaudeScheduleDay {
   date: string
@@ -20,28 +26,23 @@ export async function generateSchedule(
     preferences.days.includes(s.date)
   )
 
-  const sessionsByDate = new Map<string, Session[]>()
-  for (const s of filteredSessions) {
-    const list = sessionsByDate.get(s.date) || []
-    list.push(s)
-    sessionsByDate.set(s.date, list)
-  }
-
   const sessionsForPrompt = filteredSessions.map((s) => ({
     id: s.id,
     title: s.title,
     description: s.description,
     track: s.track,
+    type: s.type,
     format: s.format,
     date: s.date,
-    start_time: s.start_time,
-    end_time: s.end_time,
+    startTime: s.startTime,
+    endTime: s.endTime,
     venue: s.venue,
     tags: s.tags,
   }))
 
+  const client = getClient()
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-5-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4096,
     system: `You are a SXSW 2026 schedule builder. Given user preferences and available sessions, select 4-6 sessions per day that best match the user's interests and vibe. Avoid time conflicts. Respond with valid JSON only — no markdown, no explanation, no code fences.
 
@@ -105,8 +106,8 @@ export async function refineSchedule(
     sessions: day.sessions.map((s) => ({
       id: s.id,
       title: s.title,
-      start_time: s.start_time,
-      end_time: s.end_time,
+      startTime: s.startTime,
+      endTime: s.endTime,
       track: s.track,
       reason: s.reason,
     })),
@@ -121,8 +122,8 @@ export async function refineSchedule(
       track: s.track,
       format: s.format,
       date: s.date,
-      start_time: s.start_time,
-      end_time: s.end_time,
+      startTime: s.startTime,
+      endTime: s.endTime,
       tags: s.tags,
     }))
 
@@ -131,8 +132,9 @@ export async function refineSchedule(
     content: m.content,
   }))
 
+  const client = getClient()
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-5-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4096,
     system: `You are a SXSW 2026 schedule assistant helping ${schedule.name} refine their schedule. The user wants changes. Update the schedule based on their request.
 

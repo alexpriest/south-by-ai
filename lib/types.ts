@@ -3,14 +3,17 @@ export interface Session {
   title: string
   description: string
   track: string
+  type: string
   format: string
   date: string
-  start_time: string
-  end_time: string
+  startTime: string
+  endTime: string
   venue: string
   speakers: string[]
   url: string
   tags: string[]
+  imageUrl: string | null
+  badgeTypes: string[]
 }
 
 export interface ScheduleSession extends Session {

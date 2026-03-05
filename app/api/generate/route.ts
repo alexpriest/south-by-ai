@@ -4,6 +4,8 @@ import { getSessions } from '@/lib/sessions'
 import { generateSchedule } from '@/lib/claude'
 import { generateId, saveSchedule } from '@/lib/kv'
 
+export const maxDuration = 60
+
 export async function POST(request: Request) {
   try {
     const body = await request.json() as QuizState
@@ -15,7 +17,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const sessions = getSessions()
+    const sessions = await getSessions()
     const days = await generateSchedule(body, sessions)
     const id = generateId()
 
@@ -30,7 +32,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ id })
   } catch (e) {
-    console.error('Generate error:', e)
+    const err = e instanceof Error ? e.message : String(e)
+    console.error('Generate error:', err, e)
     return NextResponse.json(
       { error: 'Something broke building your schedule. Hit try again — AI has its off moments.' },
       { status: 500 }

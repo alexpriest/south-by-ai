@@ -3,6 +3,8 @@ import { getSessions } from '@/lib/sessions'
 import { refineSchedule } from '@/lib/claude'
 import { getSchedule, saveSchedule } from '@/lib/kv'
 
+export const maxDuration = 60
+
 export async function POST(request: Request) {
   try {
     const { scheduleId, message } = await request.json()
@@ -22,7 +24,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const sessions = getSessions()
+    const sessions = await getSessions()
     const { days, reply } = await refineSchedule(schedule, message.trim(), sessions)
 
     schedule.days = days

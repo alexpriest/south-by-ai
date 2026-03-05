@@ -39,13 +39,6 @@ body {
     background-clip: text;
   }
 
-  .glow-primary {
-    box-shadow: 0 0 40px rgba(255, 107, 53, 0.15);
-  }
-
-  .glow-accent {
-    box-shadow: 0 0 40px rgba(0, 212, 170, 0.1);
-  }
 }
 
 /* Quiz step transitions */

@@ -14,12 +14,11 @@ const SUGGESTIONS = [
 
 interface ChatInterfaceProps {
   scheduleId: string
-  name: string
   initialMessages: ChatMessage[]
   onScheduleUpdate: () => void
 }
 
-export function ChatInterface({ scheduleId, name, initialMessages, onScheduleUpdate }: ChatInterfaceProps) {
+export function ChatInterface({ scheduleId, initialMessages, onScheduleUpdate }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)

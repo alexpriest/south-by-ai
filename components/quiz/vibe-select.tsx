@@ -18,7 +18,7 @@ export function VibeSelect({ selected, onChange }: VibeSelectProps) {
       <h2 className="font-heading text-2xl font-bold mb-2">
         What&apos;s your SXSW vibe?
       </h2>
-      <p className="text-muted mb-6">Pick one or more.</p>
+      <p className="text-muted mb-6">Pick one.</p>
       <div className="flex flex-col gap-3">
         {VIBES.map((vibe) => {
           const isSelected = selected === vibe.id
