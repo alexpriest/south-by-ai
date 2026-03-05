@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import type { ScheduleSession } from '@/lib/types'
 import { getTrackColor } from '@/lib/track-colors'
+import { getSpeakerUrl } from '@/lib/speaker-url'
 
 interface SessionCardProps {
   session: ScheduleSession
@@ -27,14 +27,12 @@ export function SessionCard({ session }: SessionCardProps) {
             <span className="text-text/70">{session.startTime} – {session.endTime}</span>
             {session.venue && <span className="text-muted">{session.venue}</span>}
             {session.track && (
-              <Link
-                href={`/browse/${encodeURIComponent(session.track)}`}
-                onClick={(e) => e.stopPropagation()}
-                className="font-medium hover:underline"
+              <span
+                className="font-medium"
                 style={{ color: getTrackColor(session.track) }}
               >
                 {session.track}
-              </Link>
+              </span>
             )}
           </div>
           {session.reason && (
@@ -42,7 +40,20 @@ export function SessionCard({ session }: SessionCardProps) {
           )}
           {session.speakers.length > 0 && (
             <p className="text-xs text-muted mt-1.5">
-              {session.speakers.join(', ')}
+              {session.speakers.map((speaker, i) => (
+                <span key={speaker}>
+                  {i > 0 && ', '}
+                  <a
+                    href={getSpeakerUrl(speaker)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-accent/80 hover:underline"
+                  >
+                    {speaker}
+                  </a>
+                </span>
+              ))}
             </p>
           )}
         </div>
