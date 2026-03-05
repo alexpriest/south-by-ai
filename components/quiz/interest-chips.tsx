@@ -37,7 +37,7 @@ export function InterestChips({ selected, onChange }: InterestChipsProps) {
         What gets you out of bed at SXSW?
       </h2>
       <p className="text-muted mb-6">Pick as many as you want.</p>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         {INTERESTS.map((interest) => {
           const isSelected = selected.includes(interest.id)
           return (
@@ -45,14 +45,18 @@ export function InterestChips({ selected, onChange }: InterestChipsProps) {
               key={interest.id}
               onClick={() => toggle(interest.id)}
               aria-pressed={isSelected}
-              className={`rounded-xl px-4 py-3 text-left transition-all duration-200 ${
+              className={`rounded-xl px-4 py-3.5 text-left transition-all duration-200 min-h-[68px] ${
                 isSelected
-                  ? 'bg-primary/20 border border-primary text-primary shadow-[0_0_12px_rgba(255,107,53,0.15)]'
+                  ? 'bg-primary/15 border-2 border-primary text-primary shadow-[0_0_16px_rgba(255,107,53,0.2)] scale-[1.02]'
                   : 'bg-white/5 border border-white/10 text-text hover:bg-white/10 hover:border-white/20'
               }`}
             >
-              <span className="block font-semibold text-sm">{interest.label}</span>
-              <span className="block text-xs text-muted mt-0.5">{interest.desc}</span>
+              <span className={`block font-semibold text-sm ${isSelected ? 'text-primary' : 'text-text'}`}>
+                {interest.label}
+              </span>
+              <span className={`block text-xs mt-1 leading-relaxed ${isSelected ? 'text-primary/70' : 'text-muted'}`}>
+                {interest.desc}
+              </span>
             </button>
           )
         })}

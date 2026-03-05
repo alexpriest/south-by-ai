@@ -34,14 +34,14 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                 {schedule.name}&apos;s SXSW Schedule
               </h1>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               {/* View toggle */}
-              <div className="flex rounded-full bg-white/5 p-1">
+              <div className="flex rounded-full bg-white/5 border border-white/10 p-1">
                 <button
                   onClick={() => setViewMode('timeline')}
-                  className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-200 ${
                     viewMode === 'timeline'
-                      ? 'bg-white/10 text-text'
+                      ? 'bg-primary/20 text-primary'
                       : 'text-muted hover:text-text'
                   }`}
                 >
@@ -52,9 +52,9 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-200 ${
                     viewMode === 'list'
-                      ? 'bg-white/10 text-text'
+                      ? 'bg-primary/20 text-primary'
                       : 'text-muted hover:text-text'
                   }`}
                 >

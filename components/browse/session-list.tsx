@@ -51,11 +51,11 @@ export function SessionList({ sessions, showTrack }: SessionListProps) {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-3 mb-8">
+      <div className="flex flex-wrap items-center gap-3 mb-8">
         <select
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value)}
-          className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-text focus:border-primary/50 focus:ring-1 focus:ring-primary/25"
+          className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-text focus:border-primary/50 focus:ring-1 focus:ring-primary/25 transition-colors duration-200"
         >
           <option value="">All Types</option>
           {eventTypes.map((t) => (
@@ -66,7 +66,7 @@ export function SessionList({ sessions, showTrack }: SessionListProps) {
         <select
           value={selectedDate}
           onChange={(e) => setSelectedDate(e.target.value)}
-          className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-text focus:border-primary/50 focus:ring-1 focus:ring-primary/25"
+          className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-text focus:border-primary/50 focus:ring-1 focus:ring-primary/25 transition-colors duration-200"
         >
           <option value="">All Dates</option>
           {dates.map((d) => (
@@ -77,7 +77,7 @@ export function SessionList({ sessions, showTrack }: SessionListProps) {
         {(selectedType || selectedDate) && (
           <button
             onClick={() => { setSelectedType(''); setSelectedDate('') }}
-            className="text-sm text-muted hover:text-accent transition-colors px-2"
+            className="text-sm text-muted hover:text-accent transition-colors duration-200 px-2"
           >
             Clear filters
           </button>
@@ -90,7 +90,7 @@ export function SessionList({ sessions, showTrack }: SessionListProps) {
 
       {grouped.map(([date, dateSessions]: [string, Session[]]) => (
         <div key={date} className="mb-8">
-          <h2 className="font-heading text-xl font-bold mb-4 text-text/80">
+          <h2 className="font-heading text-xl font-bold mb-4 text-text/80 sticky top-0 bg-background/80 backdrop-blur-sm py-2 -my-2 z-10">
             {formatDateHeading(date)}
           </h2>
           <div className="space-y-3">

@@ -35,7 +35,7 @@ export default async function BrowsePage() {
           Browse by Category
         </h1>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {tracks.map(({ track, count }) => (
             <TrackCard key={track} track={track} count={count} />
           ))}
