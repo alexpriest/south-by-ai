@@ -103,17 +103,26 @@ ${JSON.stringify(sessionsForPrompt)}`,
 
   const sessionMap = new Map(sessionsForClaude.map((s) => [s.id, s]))
 
-  return parsed.map((day) => ({
-    date: day.date,
-    label: day.label,
-    sessions: day.sessions
-      .map((pick) => {
-        const session = sessionMap.get(pick.id)
-        if (!session) return null
-        return { ...session, reason: pick.reason, priority: pick.priority || 2 } as ScheduleSession
-      })
-      .filter((s): s is ScheduleSession => s !== null),
-  }))
+  return parsed.map((day) => {
+    const seenIds = new Set<string>()
+    const seenTitles = new Set<string>()
+    return {
+      date: day.date,
+      label: day.label,
+      sessions: day.sessions
+        .map((pick) => {
+          if (seenIds.has(pick.id)) return null
+          seenIds.add(pick.id)
+          const session = sessionMap.get(pick.id)
+          if (!session) return null
+          // Skip duplicate titles (e.g. same film screening in multiple rooms)
+          if (seenTitles.has(session.title)) return null
+          seenTitles.add(session.title)
+          return { ...session, reason: pick.reason, priority: pick.priority || 2 } as ScheduleSession
+        })
+        .filter((s): s is ScheduleSession => s !== null),
+    }
+  })
 }
 
 export async function refineSchedule(
@@ -204,17 +213,26 @@ ${JSON.stringify(availableSessions)}`,
 
   const sessionMap = new Map(sessions.map((s) => [s.id, s]))
 
-  const days: DaySchedule[] = parsed.days.map((day) => ({
-    date: day.date,
-    label: day.label,
-    sessions: day.sessions
-      .map((pick) => {
-        const session = sessionMap.get(pick.id)
-        if (!session) return null
-        return { ...session, reason: pick.reason, priority: pick.priority || 2 } as ScheduleSession
-      })
-      .filter((s): s is ScheduleSession => s !== null),
-  }))
+  const days: DaySchedule[] = parsed.days.map((day) => {
+    const seenIds = new Set<string>()
+    const seenTitles = new Set<string>()
+    return {
+      date: day.date,
+      label: day.label,
+      sessions: day.sessions
+        .map((pick) => {
+          if (seenIds.has(pick.id)) return null
+          seenIds.add(pick.id)
+          const session = sessionMap.get(pick.id)
+          if (!session) return null
+          // Skip duplicate titles (e.g. same film screening in multiple rooms)
+          if (seenTitles.has(session.title)) return null
+          seenTitles.add(session.title)
+          return { ...session, reason: pick.reason, priority: pick.priority || 2 } as ScheduleSession
+        })
+        .filter((s): s is ScheduleSession => s !== null),
+    }
+  })
 
   return { days, reply: parsed.reply }
 }

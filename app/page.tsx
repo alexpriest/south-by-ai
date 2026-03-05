@@ -43,11 +43,11 @@ export default function Home() {
           <a href="https://alexpriest.com" target="_blank" rel="noopener noreferrer" className="text-muted/80 hover:text-accent transition-colors underline underline-offset-2">
             Alex Priest
           </a>
-          {' '}with Claude
+          {' '}with Claude Code
         </p>
         <p className="mt-2">
           <a href="https://buymeacoffee.com/alexpriest" target="_blank" rel="noopener noreferrer" className="text-muted/80 hover:text-accent transition-colors underline underline-offset-2">
-            Buy me a coffee
+            Buy me a coffee ☕
           </a>
         </p>
         <p className="mt-2">
