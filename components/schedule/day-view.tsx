@@ -15,11 +15,26 @@ export function DayView({ day, onSwap }: DayViewProps) {
     )
   }
 
+  let shownHint = false
+
   return (
     <div className="flex flex-col gap-3.5">
-      {day.sessions.map((session) => (
-        <SessionCard key={session.id} session={session} onSwap={onSwap ? () => onSwap(session.id) : undefined} />
-      ))}
+      {day.sessions.map((session) => {
+        const isAlt = (session.priority || 2) !== 1
+        const showHint = isAlt && !shownHint && onSwap
+        if (showHint) shownHint = true
+
+        return (
+          <div key={session.id}>
+            <SessionCard session={session} onSwap={onSwap ? () => onSwap(session.id) : undefined} />
+            {showHint && (
+              <p className="text-[11px] text-muted/60 mt-1.5 ml-4 italic">
+                Tap &quot;Promote&quot; on any alternative to make it your top pick for that time slot.
+              </p>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

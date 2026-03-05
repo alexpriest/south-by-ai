@@ -52,15 +52,9 @@ export function TimelineBlock({ session, style, isTopPick, onClick, onSwap }: Ti
             {session.title}
           </h4>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1">
-            {isTopPick && (
-              <span className="text-[10px] font-medium text-primary">Top Pick</span>
-            )}
-            {session.venue && (
-              <span className="text-[11px] text-muted truncate">{session.venue}</span>
-            )}
             {session.track && (
               <span
-                className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                className="text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0"
                 style={{
                   color: trackColor,
                   backgroundColor: `${trackColor}20`,
@@ -68,6 +62,12 @@ export function TimelineBlock({ session, style, isTopPick, onClick, onSwap }: Ti
               >
                 {session.track}
               </span>
+            )}
+            {isTopPick && (
+              <span className="text-[10px] font-medium text-primary">Top Pick</span>
+            )}
+            {session.venue && (
+              <span className="text-[11px] text-muted truncate max-w-[200px]">{session.venue}</span>
             )}
           </div>
         </div>

@@ -9,7 +9,8 @@ interface SessionCardProps {
 
 export function SessionCard({ session, onSwap }: SessionCardProps) {
   const isTopPick = (session.priority || 2) === 1
-  const isAlt = (session.priority || 2) >= 3
+  const isAlt = !isTopPick
+  const trackColor = getTrackColor(session.track)
 
   return (
     <a
@@ -17,7 +18,8 @@ export function SessionCard({ session, onSwap }: SessionCardProps) {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`${session.title} (opens in new tab)`}
-      className={`group block bg-white/5 dark:bg-white/5 backdrop-blur-md border border-white/10 dark:border-white/10 rounded-xl p-5 hover:bg-white/[0.08] hover:border-white/15 transition-all duration-200 ${
+      style={{ borderLeftColor: trackColor }}
+      className={`group block border-l-[3px] bg-white/5 dark:bg-white/5 backdrop-blur-md border-t border-r border-b border-white/10 dark:border-white/10 rounded-xl p-5 hover:bg-white/[0.08] hover:border-white/15 transition-all duration-200 ${
         isAlt ? 'opacity-60' : ''
       }`}
     >

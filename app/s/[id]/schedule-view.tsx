@@ -125,6 +125,26 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
         </div>
       </div>
 
+      {/* Preferences breadcrumbs */}
+      <div className="border-b border-white/5">
+        <div className="max-w-4xl mx-auto px-4 md:px-8 py-3 flex flex-wrap gap-2 items-center text-xs">
+          <span className="text-muted/60 shrink-0">Your picks based on:</span>
+          {currentSchedule.preferences.interests.map((interest) => (
+            <span key={interest} className="bg-white/5 text-muted px-2.5 py-1 rounded-full">
+              {interest}
+            </span>
+          ))}
+          {currentSchedule.preferences.vibes.map((vibe) => (
+            <span key={vibe} className="bg-primary/10 text-primary/80 px-2.5 py-1 rounded-full">
+              {vibe}
+            </span>
+          ))}
+          <span className="bg-accent/10 text-accent/80 px-2.5 py-1 rounded-full">
+            {currentSchedule.preferences.badge}
+          </span>
+        </div>
+      </div>
+
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">
         <div className="flex justify-end mb-4">
