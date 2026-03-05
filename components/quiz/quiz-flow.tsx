@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { NameInput } from './name-input'
+import { BadgePicker } from './badge-picker'
 import { InterestChips } from './interest-chips'
 import { VibeSelect } from './vibe-select'
 import { DayPicker } from './day-picker'
@@ -10,7 +11,7 @@ import { FreeText } from './free-text'
 import type { QuizState } from '@/lib/types'
 
 const LOADING_MESSAGES = [
-  'Scanning 850+ sessions so you don\'t have to...',
+  'Scanning 3,700+ sessions so you don\'t have to...',
   'Debating whether to schedule around taco breaks...',
   'Calculating optimal 6th Street proximity...',
   'Arguing with Claude about your music taste...',
@@ -24,7 +25,7 @@ const LOADING_MESSAGES = [
   'Making sure your schedule survives a Dirty Sixth detour...',
 ]
 
-const STEPS = ['name', 'interests', 'vibe', 'days', 'freeText'] as const
+const STEPS = ['name', 'badge', 'interests', 'vibe', 'days', 'freeText'] as const
 type Step = typeof STEPS[number]
 
 export function QuizFlow() {
@@ -39,6 +40,7 @@ export function QuizFlow() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [quiz, setQuiz] = useState<QuizState>({
     name: '',
+    badge: '',
     interests: [],
     vibe: '',
     days: [],
@@ -53,6 +55,7 @@ export function QuizFlow() {
   const canAdvance = () => {
     switch (step) {
       case 'name': return quiz.name.trim().length > 0
+      case 'badge': return quiz.badge.length > 0
       case 'interests': return quiz.interests.length > 0
       case 'vibe': return quiz.vibe.length > 0
       case 'days': return quiz.days.length > 0
@@ -160,6 +163,9 @@ export function QuizFlow() {
       <div key={animKey} className={`mb-10 ${animClass}`}>
         {step === 'name' && (
           <NameInput value={quiz.name} onChange={(name) => setQuiz({ ...quiz, name })} />
+        )}
+        {step === 'badge' && (
+          <BadgePicker selected={quiz.badge} onChange={(badge) => setQuiz({ ...quiz, badge })} />
         )}
         {step === 'interests' && (
           <InterestChips selected={quiz.interests} onChange={(interests) => setQuiz({ ...quiz, interests })} />

@@ -22,6 +22,7 @@ export interface ScheduleSession extends Session {
 
 export interface QuizState {
   name: string
+  badge: string
   interests: string[]
   vibe: string
   days: string[]
