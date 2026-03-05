@@ -103,7 +103,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                 </svg>
                 Export
               </a>
-              <ShareButton scheduleId={currentSchedule.id} />
+              <ShareButton scheduleId={currentSchedule.id} scheduleName={currentSchedule.name} />
               <Link
                 href={`/s/${currentSchedule.id}/refine`}
                 className="bg-primary text-white rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-primary/90 transition-colors"
