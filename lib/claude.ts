@@ -91,7 +91,9 @@ ${JSON.stringify(sessionsForPrompt)}`,
     ],
   })
 
-  const text = message.content[0].type === 'text' ? message.content[0].text : ''
+  const rawText = message.content[0].type === 'text' ? message.content[0].text : ''
+  // Strip markdown code fences if Claude wraps the response
+  const text = rawText.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
   let parsed: ClaudeScheduleDay[]
   try {
     parsed = JSON.parse(text)
@@ -191,10 +193,11 @@ ${JSON.stringify(availableSessions)}`,
     ],
   })
 
-  const text = message.content[0].type === 'text' ? message.content[0].text : ''
+  const rawRefineText = message.content[0].type === 'text' ? message.content[0].text : ''
+  const refineText = rawRefineText.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
   let parsed: { reply: string; days: ClaudeScheduleDay[] }
   try {
-    parsed = JSON.parse(text)
+    parsed = JSON.parse(refineText)
   } catch {
     throw new Error('Failed to parse refinement from AI response')
   }
