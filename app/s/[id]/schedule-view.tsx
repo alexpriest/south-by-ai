@@ -64,6 +64,20 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                   </svg>
                   List
                 </button>
+                <button
+                  onClick={() => setViewMode('map')}
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-200 ${
+                    viewMode === 'map'
+                      ? 'bg-primary/20 text-primary'
+                      : 'text-muted hover:text-text'
+                  }`}
+                >
+                  <svg className="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Map
+                </button>
               </div>
               <a
                 href={`/api/calendar/${schedule.id}`}
@@ -133,6 +147,8 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
             {activeDay && (
               viewMode === 'timeline'
                 ? <TimelineView day={activeDay} />
+                : viewMode === 'map'
+                ? <MapView day={activeDay} />
                 : <DayView day={activeDay} />
             )}
           </>
