@@ -186,7 +186,7 @@ export function QuizFlow() {
       )}
 
       {/* Navigation */}
-      <div className="flex gap-3">
+      <div className="flex items-center gap-3">
         {!isFirst && (
           <button
             onClick={back}
@@ -202,6 +202,11 @@ export function QuizFlow() {
         >
           {isLast ? 'Generate My Schedule' : 'Next'}
         </button>
+        {canAdvance() && (
+          <span className="text-xs text-muted/60 hidden sm:inline-flex items-center gap-1.5 ml-1">
+            press <kbd className="inline-flex items-center justify-center px-1.5 py-0.5 rounded bg-white/10 border border-white/10 text-[10px] font-medium text-muted">Enter ↵</kbd>
+          </span>
+        )}
       </div>
     </div>
   )

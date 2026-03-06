@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+
 const DAYS = [
   { id: '2026-03-12', label: 'Thu Mar 12' },
   { id: '2026-03-13', label: 'Fri Mar 13' },
@@ -24,6 +26,19 @@ export function DayPicker({ selected, onChange }: DayPickerProps) {
     }
   }
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      const num = parseInt(e.key, 10)
+      if (num >= 1 && num <= DAYS.length) {
+        e.preventDefault()
+        toggle(DAYS[num - 1].id)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selected, onChange])
+
   return (
     <div>
       <h2 className="font-heading text-2xl font-bold mb-2">
@@ -31,7 +46,7 @@ export function DayPicker({ selected, onChange }: DayPickerProps) {
       </h2>
       <p className="text-muted mb-6">We&apos;ll only schedule days you pick.</p>
       <div className="flex flex-wrap gap-3">
-        {DAYS.map((day) => {
+        {DAYS.map((day, i) => {
           const isSelected = selected.includes(day.id)
           return (
             <button
@@ -44,6 +59,13 @@ export function DayPicker({ selected, onChange }: DayPickerProps) {
                   : 'bg-white/5 border border-white/10 text-text hover:bg-white/10 hover:border-white/20'
               }`}
             >
+              <kbd className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold mr-2 transition-colors duration-200 ${
+                isSelected
+                  ? 'bg-primary text-white'
+                  : 'bg-white/10 text-muted border border-white/10'
+              }`}>
+                {i + 1}
+              </kbd>
               {day.label}
             </button>
           )
