@@ -220,7 +220,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">
-        <div className="flex justify-end mb-4">
+        <div className="flex flex-col items-end gap-1 mb-4">
           <a
             href="https://schedule.sxsw.com/2026/search/event"
             target="_blank"
@@ -229,7 +229,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
           >
             Browse all sessions on sxsw.com &rarr;
           </a>
-          <p className="text-xs text-muted/50 mt-1">
+          <p className="text-xs text-muted/50">
             Session details may change — always check sxsw.com for the latest.
           </p>
         </div>
@@ -265,9 +265,6 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
           </>
         )}
       </div>
-      {process.env.NEXT_PUBLIC_BUILD_SHA && (
-        <p className="text-center py-4 text-[10px] text-muted/30">{process.env.NEXT_PUBLIC_BUILD_SHA}</p>
-      )}
     </main>
   )
 }

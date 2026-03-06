@@ -35,10 +35,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://unpkg.com" />
         <link rel="preconnect" href="https://tile.openstreetmap.org" />
       </head>
-      <body className={`${inter.className} bg-background text-text min-h-screen`}>
+      <body className={`${inter.className} bg-background text-text min-h-screen flex flex-col`}>
         <ThemeToggle />
-        {children}
-        <footer className="text-center py-4 text-[10px] text-muted/50">
+        <div className="flex-1">{children}</div>
+        <footer className="text-center py-4 text-[10px] text-muted/50 mt-auto">
           {process.env.NEXT_PUBLIC_BUILD_SHA}
         </footer>
       </body>

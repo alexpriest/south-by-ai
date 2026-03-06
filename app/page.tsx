@@ -55,9 +55,6 @@ export default function Home() {
         <p className="mt-2">
           Not affiliated with or endorsed by SXSW LLC. Session data from the public SXSW schedule.
         </p>
-        {process.env.NEXT_PUBLIC_BUILD_SHA && (
-          <p className="mt-2 text-[10px] text-muted/30">{process.env.NEXT_PUBLIC_BUILD_SHA}</p>
-        )}
       </footer>
     </main>
   )

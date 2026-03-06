@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { getVenueCoords } from '@/lib/venue-coords'
 import { getTrackColor } from '@/lib/track-colors'
 import type { DaySchedule, ScheduleSession } from '@/lib/types'
@@ -24,23 +24,72 @@ function getTimeFilter(session: ScheduleSession): TimeFilter {
   return 'evening'
 }
 
+interface VenueStop {
+  stopNumber: number
+  venueName: string
+  venueKey: string
+  lat: number
+  lng: number
+  color: string
+  sessions: ScheduleSession[]
+}
+
+const STOP_COLORS = ['#FF6B35', '#00D4AA', '#3B82F6', '#A855F7', '#EC4899', '#F59E0B', '#10B981', '#EF4444']
+
 export function MapView({ day }: MapViewProps) {
   const mapRef = useRef<any>(null)
   const markersRef = useRef<any>(null)
+  const markerObjsRef = useRef<Map<string, any>>(new Map())
   const containerRef = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
   const [loaded, setLoaded] = useState(false)
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
-  const [hasMarkers, setHasMarkers] = useState(true)
-  const [calloutMessage, setCalloutMessage] = useState<string | null>(null)
+  const [activeStop, setActiveStop] = useState<number | null>(null)
+  const [stops, setStops] = useState<VenueStop[]>([])
+
+  // Build stops from day data
+  const buildStops = useCallback((filter: TimeFilter): VenueStop[] => {
+    const filtered = day.sessions.filter((s) => {
+      if (s.priority !== 1) return false
+      if (filter !== 'all' && getTimeFilter(s) !== filter) return false
+      return getVenueCoords(s.venue) !== null
+    })
+
+    const sorted = [...filtered].sort((a, b) => a.startTime.localeCompare(b.startTime))
+
+    const venueGroups = new Map<string, ScheduleSession[]>()
+    sorted.forEach((session) => {
+      const coords = getVenueCoords(session.venue)
+      if (!coords) return
+      const key = `${coords.lat},${coords.lng}`
+      if (!venueGroups.has(key)) venueGroups.set(key, [])
+      venueGroups.get(key)!.push(session)
+    })
+
+    const result: VenueStop[] = []
+    let num = 0
+    venueGroups.forEach((sessions, key) => {
+      num++
+      const [lat, lng] = key.split(',').map(Number)
+      const venueName = sessions[0].venue.split(',').pop()?.trim() || sessions[0].venue
+      result.push({
+        stopNumber: num,
+        venueName,
+        venueKey: key,
+        lat,
+        lng,
+        color: STOP_COLORS[(num - 1) % STOP_COLORS.length],
+        sessions,
+      })
+    })
+
+    return result
+  }, [day])
 
   // Load Leaflet script once
   useEffect(() => {
     if (typeof window === 'undefined') return
-
-    if ((window as any).L) {
-      setLoaded(true)
-      return
-    }
+    if ((window as any).L) { setLoaded(true); return }
 
     const link = document.createElement('link')
     link.rel = 'stylesheet'
@@ -53,7 +102,7 @@ export function MapView({ day }: MapViewProps) {
     document.head.appendChild(script)
   }, [])
 
-  // Initialize map once when Leaflet is loaded
+  // Initialize map once
   useEffect(() => {
     if (!loaded || !containerRef.current || typeof L === 'undefined') return
     if (mapRef.current) return
@@ -63,11 +112,13 @@ export function MapView({ day }: MapViewProps) {
       ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
       : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
 
-    const map = L.map(containerRef.current).setView([30.265, -97.742], 14)
+    const map = L.map(containerRef.current, { zoomControl: false }).setView([30.265, -97.742], 14)
     mapRef.current = map
 
+    L.control.zoom({ position: 'topright' }).addTo(map)
+
     L.tileLayer(tileUrl, {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 19,
     }).addTo(map)
 
@@ -82,128 +133,87 @@ export function MapView({ day }: MapViewProps) {
   useEffect(() => {
     if (!mapRef.current || typeof L === 'undefined') return
 
-    // Clear previous markers/polylines
     if (markersRef.current) markersRef.current.clearLayers()
     markersRef.current = L.layerGroup().addTo(mapRef.current)
+    markerObjsRef.current = new Map()
 
-    // Filter sessions by time
-    const filtered = day.sessions.filter((s) => {
-      if (timeFilter !== 'all' && getTimeFilter(s) !== timeFilter) return false
-      return getVenueCoords(s.venue) !== null
-    })
+    const newStops = buildStops(timeFilter)
+    setStops(newStops)
+    setActiveStop(null)
 
-    // Sort by start time
-    const sorted = [...filtered].sort((a, b) => a.startTime.localeCompare(b.startTime))
-
-    // Group sessions by venue coordinates
-    const venueGroups = new Map<string, ScheduleSession[]>()
-    sorted.forEach((session) => {
-      const coords = getVenueCoords(session.venue)
-      if (!coords) return
-      const key = `${coords.lat},${coords.lng}`
-      if (!venueGroups.has(key)) venueGroups.set(key, [])
-      venueGroups.get(key)!.push(session)
-    })
-
-    // Compute callout message based on venue distribution
-    const uniqueVenues = new Map<string, string>()
-    venueGroups.forEach((sessions, key) => {
-      uniqueVenues.set(key, sessions[0].venue)
-    })
-
-    const timeLabel = timeFilter === 'all' ? 'today' : timeFilter
-    if (uniqueVenues.size === 1) {
-      const firstVenue = Array.from(uniqueVenues.values())[0]
-      const venueName = firstVenue.split(',').pop()?.trim() || firstVenue
-      setCalloutMessage(
-        timeFilter === 'all'
-          ? `All your sessions today are at ${venueName} — no walking needed!`
-          : `All your ${timeLabel} sessions are at ${venueName} — no walking needed!`
-      )
-    } else if (uniqueVenues.size >= 2) {
-      const coords = Array.from(uniqueVenues.keys()).map(k => k.split(',').map(Number))
-      const lats = coords.map(c => c[0])
-      const lngs = coords.map(c => c[1])
-      const latSpread = Math.max(...lats) - Math.min(...lats)
-      const lngSpread = Math.max(...lngs) - Math.min(...lngs)
-      if (latSpread < 0.002 && lngSpread < 0.002) {
-        setCalloutMessage('Your sessions are clustered nearby — easy walking day!')
-      } else {
-        setCalloutMessage(null)
-      }
-    } else {
-      setCalloutMessage(null)
-    }
-
-    // Add one marker per venue with multi-session popup
     const routePoints: [number, number][] = []
-    let stopNumber = 0
 
-    venueGroups.forEach((sessions, key) => {
-      stopNumber++
-      const [lat, lng] = key.split(',').map(Number)
-      const stopColors = ['#FF6B35', '#00D4AA', '#3B82F6', '#A855F7', '#EC4899', '#F59E0B', '#10B981', '#EF4444']
-      const markerColor = stopColors[(stopNumber - 1) % stopColors.length]
-
+    newStops.forEach((stop) => {
       const icon = L.divIcon({
         className: '',
-        html: `<div style="width:24px;height:24px;border-radius:50%;background:${markerColor};color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:Inter,sans-serif;border:2px solid rgba(255,255,255,0.4);box-shadow:0 2px 6px rgba(0,0,0,0.3);">${stopNumber}</div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
-        popupAnchor: [0, -12],
+        html: `<div class="map-stop-marker" data-stop="${stop.stopNumber}" style="width:28px;height:28px;border-radius:50%;background:${stop.color};color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:Inter,sans-serif;border:2px solid rgba(255,255,255,0.4);box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;transition:transform 0.15s ease,box-shadow 0.15s ease;">${stop.stopNumber}</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
       })
 
-      const marker = L.marker([lat, lng], { icon }).addTo(markersRef.current)
+      const marker = L.marker([stop.lat, stop.lng], { icon }).addTo(markersRef.current)
+      markerObjsRef.current.set(stop.venueKey, marker)
 
-      const venueName = sessions[0].venue.split(',').pop()?.trim() || sessions[0].venue
-      const popupHtml = sessions.map((s, i) => {
-        const color = getTrackColor(s.track)
-        return `
-          <div style="padding: 8px 0;${i > 0 ? ' border-top: 1px solid #333;' : ''}">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              ${s.priority === 1 ? '<span style="color: #FF6B35;">&#9733;</span>' : ''}
-              <strong style="font-size: 13px;">${escapeHtml(s.title)}</strong>
-            </div>
-            <div style="font-size: 11px; color: #999; margin-top: 4px;">
-              ${escapeHtml(s.startTime)} &ndash; ${escapeHtml(s.endTime)}
-            </div>
-            <span style="display: inline-block; background: ${color}22; color: ${color}; padding: 1px 6px; border-radius: 8px; font-size: 10px; margin-top: 4px;">
-              ${escapeHtml(s.track)}
-            </span>
-          </div>
-        `
-      }).join('')
+      marker.on('click', () => {
+        setActiveStop(stop.stopNumber)
+      })
 
-      const popupContent = `
-        <div style="font-family: Inter, sans-serif; min-width: 220px; max-height: 300px; overflow-y: auto;">
-          <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">${escapeHtml(venueName)}${sessions.length > 1 ? ` &middot; ${sessions.length} sessions` : ''}</div>
-          ${popupHtml}
-        </div>
-      `
-
-      marker.bindPopup(popupContent, { maxWidth: 320 })
-
-      routePoints.push([lat, lng])
+      routePoints.push([stop.lat, stop.lng])
     })
-
-    setHasMarkers(routePoints.length > 0)
 
     // Draw walking route
     if (routePoints.length > 1) {
       L.polyline(routePoints, {
         color: '#FF6B35',
         weight: 2,
-        opacity: 0.4,
-        dashArray: '8, 8',
+        opacity: 0.3,
+        dashArray: '6, 8',
       }).addTo(markersRef.current)
     }
 
-    // Fit bounds if we have points
+    // Fit bounds
     if (routePoints.length > 0) {
       const bounds = L.latLngBounds(routePoints)
-      mapRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 })
+      mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 })
     }
-  }, [day, timeFilter, loaded])
+  }, [day, timeFilter, loaded, buildStops])
+
+  // Highlight active marker on map
+  useEffect(() => {
+    if (!mapRef.current) return
+
+    // Reset all markers
+    document.querySelectorAll('.map-stop-marker').forEach((el) => {
+      const htmlEl = el as HTMLElement
+      htmlEl.style.transform = 'scale(1)'
+      htmlEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)'
+      htmlEl.style.zIndex = '1'
+    })
+
+    if (activeStop !== null) {
+      const stop = stops.find(s => s.stopNumber === activeStop)
+      if (stop) {
+        // Highlight the active marker
+        const activeEl = document.querySelector(`.map-stop-marker[data-stop="${activeStop}"]`) as HTMLElement
+        if (activeEl) {
+          activeEl.style.transform = 'scale(1.35)'
+          activeEl.style.boxShadow = `0 0 0 4px ${stop.color}40, 0 4px 12px rgba(0,0,0,0.4)`
+          activeEl.style.zIndex = '100'
+        }
+
+        // Pan to the marker
+        mapRef.current.panTo([stop.lat, stop.lng], { animate: true, duration: 0.3 })
+
+        // Scroll list item into view
+        const listItem = document.getElementById(`stop-${activeStop}`)
+        listItem?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    }
+  }, [activeStop, stops])
+
+  const handleStopClick = (stopNumber: number) => {
+    setActiveStop(activeStop === stopNumber ? null : stopNumber)
+  }
 
   const filters: { value: TimeFilter; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -231,27 +241,115 @@ export function MapView({ day }: MapViewProps) {
         ))}
       </div>
 
-      {/* Callout banner */}
-      {calloutMessage && (
-        <div className="mb-3 px-4 py-2.5 rounded-xl bg-accent/10 border border-accent/20 text-sm text-accent">
-          {calloutMessage}
+      {stops.length === 0 && loaded ? (
+        <div className="text-center py-16">
+          <p className="text-muted text-sm">
+            We don&apos;t have venue locations for these sessions yet. Try the list or timeline view instead.
+          </p>
+        </div>
+      ) : (
+        /* Map + Sidebar layout */
+        <div className="flex flex-col lg:flex-row gap-4 rounded-xl overflow-hidden border border-white/10">
+          {/* Map */}
+          <div
+            className="relative lg:flex-1"
+            style={{ minHeight: '350px', height: 'calc(50vh - 100px)' }}
+          >
+            <div
+              ref={containerRef}
+              className="lg:rounded-none"
+              style={{ width: '100%', height: '100%' }}
+            />
+            {/* Stop count badge */}
+            {stops.length > 0 && (
+              <div className="absolute top-3 left-3 z-[1000] bg-background/80 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5 text-xs text-muted">
+                {stops.length} stop{stops.length !== 1 ? 's' : ''}
+              </div>
+            )}
+          </div>
+
+          {/* Session sidebar */}
+          <div
+            ref={listRef}
+            className="lg:w-[340px] shrink-0 overflow-y-auto bg-white/[0.02] lg:border-l border-white/10"
+            style={{ maxHeight: 'calc(100vh - 300px)' }}
+          >
+            <div className="p-3 space-y-1">
+              {stops.map((stop) => (
+                <div
+                  key={stop.stopNumber}
+                  id={`stop-${stop.stopNumber}`}
+                  onClick={() => handleStopClick(stop.stopNumber)}
+                  className={`group rounded-lg p-3 cursor-pointer transition-all duration-200 ${
+                    activeStop === stop.stopNumber
+                      ? 'bg-white/[0.08] ring-1 ring-white/15'
+                      : 'hover:bg-white/[0.04]'
+                  }`}
+                >
+                  {/* Stop header */}
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <div
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0 transition-transform duration-200 group-hover:scale-110"
+                      style={{
+                        background: stop.color,
+                        boxShadow: activeStop === stop.stopNumber
+                          ? `0 0 0 3px ${stop.color}30`
+                          : 'none',
+                      }}
+                    >
+                      {stop.stopNumber}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[11px] text-muted/70 uppercase tracking-wider truncate">
+                        {stop.venueName}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Sessions at this stop */}
+                  <div className="space-y-1.5 ml-[34px]">
+                    {stop.sessions.map((session) => {
+                      const trackColor = getTrackColor(session.track)
+                      return (
+                        <div key={session.id} className="flex items-start gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className={`text-sm leading-snug ${
+                              activeStop === stop.stopNumber ? 'text-text' : 'text-text/80'
+                            }`}>
+                              {session.priority === 1 && (
+                                <span className="text-primary mr-1">&#9733;</span>
+                              )}
+                              {session.title}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[11px] text-muted">
+                                {session.startTime} – {session.endTime}
+                              </span>
+                              <span
+                                className="text-[10px] font-medium px-1.5 py-0 rounded-full"
+                                style={{
+                                  color: trackColor,
+                                  background: `${trackColor}15`,
+                                }}
+                              >
+                                {session.track}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              {stops.length === 0 && (
+                <p className="text-muted text-sm text-center py-8">No mapped sessions for this filter.</p>
+              )}
+            </div>
+          </div>
         </div>
       )}
-
-      {/* Map container */}
-      <div
-        className="rounded-xl overflow-hidden border border-white/10 relative"
-        style={{ height: 'calc(100vh - 300px)', minHeight: '400px' }}
-      >
-        <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
-        {!hasMarkers && loaded && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <p className="text-muted text-center py-8 text-sm">
-              We don&apos;t have venue locations for these sessions yet. Try the list or timeline view instead.
-            </p>
-          </div>
-        )}
-      </div>
     </div>
   )
 }
