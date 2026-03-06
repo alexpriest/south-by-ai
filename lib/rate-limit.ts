@@ -3,13 +3,13 @@ import { kv } from '@vercel/kv'
 
 const generateLimiter = new Ratelimit({
   redis: kv,
-  limiter: Ratelimit.slidingWindow(5, '1 h'),
+  limiter: Ratelimit.slidingWindow(100, '1 h'),
   prefix: 'ratelimit:gen',
 })
 
 const refineLimiter = new Ratelimit({
   redis: kv,
-  limiter: Ratelimit.slidingWindow(20, '1 h'),
+  limiter: Ratelimit.slidingWindow(200, '1 h'),
   prefix: 'ratelimit:refine',
 })
 
