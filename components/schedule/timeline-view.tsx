@@ -11,11 +11,12 @@ interface TimelineViewProps {
   onSwap?: (sessionId: string) => void
 }
 
+const PX_PER_HOUR = 80
 const START_HOUR = 9
 const END_HOUR = 23
-const TOTAL_MINUTES = (END_HOUR - START_HOUR) * 60 // 840
-const CONTAINER_HEIGHT = 840 // 60px per hour
-const START_MINUTES = START_HOUR * 60 // 540
+const TOTAL_MINUTES = (END_HOUR - START_HOUR) * 60
+const CONTAINER_HEIGHT = (END_HOUR - START_HOUR) * PX_PER_HOUR
+const START_MINUTES = START_HOUR * 60
 
 function isSXSWDate(dateStr: string): boolean {
   const d = new Date(dateStr + 'T00:00:00')
@@ -63,7 +64,7 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
             className="absolute left-0 right-0 border-t border-white/5"
             style={{ top: `${top}%` }}
           >
-            <span className="absolute -top-2 left-0 w-12 text-xs text-muted">
+            <span className="absolute -top-2 left-0 w-12 text-xs text-muted/50 tabular-nums">
               {hour.toString().padStart(2, '0')}:00
             </span>
           </div>
@@ -84,7 +85,6 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
       {/* Session blocks */}
       <div className="absolute left-14 right-0 top-0 bottom-0">
         {overlapGroups.map((group) => {
-          // Sort by priority (lowest = best)
           const sorted = [...group].sort(
             (a, b) => (a.priority || 2) - (b.priority || 2)
           )
@@ -100,19 +100,24 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
             const groupSize = sorted.length
             const isTopPick = groupSize > 1 && indexInGroup === 0
 
-            // Top pick gets 60% width, alternatives split remaining 40%
+            // Layout: top pick gets more space, alts stack in remaining column
+            // Max 2 visible alts — keeps it readable
             let widthPercent: number
             let leftPercent: number
             if (groupSize === 1) {
               widthPercent = 100
               leftPercent = 0
             } else if (isTopPick) {
-              widthPercent = 60
+              widthPercent = 55
               leftPercent = 0
             } else {
-              const altCount = groupSize - 1
-              widthPercent = 40 / altCount
-              leftPercent = 60 + (indexInGroup - 1) * widthPercent
+              // Alts share the remaining 45%, max 2 columns
+              const visibleAlts = Math.min(groupSize - 1, 2)
+              const altIndex = Math.min(indexInGroup - 1, 1)
+              widthPercent = 45 / visibleAlts
+              leftPercent = 55 + altIndex * widthPercent
+              // Hide 3rd+ alts
+              if (indexInGroup > 2) return null
             }
 
             return (
@@ -120,6 +125,7 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
                 key={session.id}
                 session={session}
                 isTopPick={isTopPick}
+                compact={!isTopPick && groupSize > 1}
                 onClick={() => {
                   const el = document.getElementById(`timeline-block-${session.id}`)
                   if (el) {
@@ -132,7 +138,7 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
                   height: `${height}%`,
                   left: `${leftPercent}%`,
                   width: `${widthPercent}%`,
-                  minHeight: 40,
+                  minHeight: 44,
                 }}
               />
             )

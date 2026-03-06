@@ -184,24 +184,6 @@ export function MapView({ day }: MapViewProps) {
         dashArray: '8, 8',
       }).addTo(map)
 
-      // Add direction arrows at midpoints between stops
-      for (let i = 0; i < routePoints.length - 1; i++) {
-        const [lat1, lng1] = routePoints[i]
-        const [lat2, lng2] = routePoints[i + 1]
-        const midLat = (lat1 + lat2) / 2
-        const midLng = (lng1 + lng2) / 2
-        const angle = Math.atan2(lng2 - lng1, lat2 - lat1) * (180 / Math.PI)
-
-        L.marker([midLat, midLng], {
-          icon: L.divIcon({
-            className: '',
-            html: `<div style="transform:rotate(${90 - angle}deg);color:#FF6B35;font-size:16px;opacity:0.6;">▶</div>`,
-            iconSize: [16, 16],
-            iconAnchor: [8, 8],
-          }),
-          interactive: false,
-        }).addTo(map)
-      }
     }
 
     // Fit bounds if we have points
