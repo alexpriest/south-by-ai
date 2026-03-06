@@ -27,7 +27,13 @@ export async function POST(request: Request) {
     }
 
     const sessions = await getSessions()
-    const days = await generateSchedule(body, sessions)
+    let days
+    try {
+      days = await generateSchedule(body, sessions)
+    } catch (first) {
+      console.warn('First generate attempt failed, retrying:', first instanceof Error ? first.message : first)
+      days = await generateSchedule(body, sessions)
+    }
     const id = generateId()
 
     await saveSchedule({

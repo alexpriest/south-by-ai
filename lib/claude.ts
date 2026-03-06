@@ -9,6 +9,27 @@ function getClient() {
   return new Anthropic({ apiKey })
 }
 
+function extractJSON(raw: string): string {
+  // Strip markdown code fences
+  let text = raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
+
+  // If it parses as-is, return it
+  try { JSON.parse(text); return text } catch {}
+
+  // Try to find a JSON array or object in the response
+  const arrayMatch = text.match(/\[[\s\S]*\]/)
+  if (arrayMatch) {
+    try { JSON.parse(arrayMatch[0]); return arrayMatch[0] } catch {}
+  }
+
+  const objectMatch = text.match(/\{[\s\S]*\}/)
+  if (objectMatch) {
+    try { JSON.parse(objectMatch[0]); return objectMatch[0] } catch {}
+  }
+
+  return text
+}
+
 interface ClaudeScheduleDay {
   date: string
   label: string
@@ -111,12 +132,12 @@ Response format:
   })
 
   const rawText = message.content[0].type === 'text' ? message.content[0].text : ''
-  // Strip markdown code fences if Claude wraps the response
-  const text = rawText.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
+  const text = extractJSON(rawText)
   let parsed: ClaudeScheduleDay[]
   try {
     parsed = JSON.parse(text)
   } catch {
+    console.error('Failed to parse AI response. Raw text:', rawText.slice(0, 500))
     throw new Error('Failed to parse schedule from AI response')
   }
 
@@ -134,7 +155,6 @@ Response format:
           seenIds.add(pick.id)
           const session = sessionMap.get(pick.id)
           if (!session) return null
-          // Skip duplicate titles (e.g. same film screening in multiple rooms)
           if (seenTitles.has(session.title)) return null
           seenTitles.add(session.title)
           return { ...session, reason: pick.reason, priority: pick.priority || 2 } as ScheduleSession
@@ -236,11 +256,12 @@ ${JSON.stringify(availableSessionsForPrompt)}`,
   })
 
   const rawRefineText = message.content[0].type === 'text' ? message.content[0].text : ''
-  const refineText = rawRefineText.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
+  const refineText = extractJSON(rawRefineText)
   let parsed: { reply: string; days: ClaudeScheduleDay[] }
   try {
     parsed = JSON.parse(refineText)
   } catch {
+    console.error('Failed to parse refine response. Raw text:', rawRefineText.slice(0, 500))
     throw new Error('Failed to parse refinement from AI response')
   }
 
