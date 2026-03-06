@@ -130,11 +130,9 @@ export function MapView({ day }: MapViewProps) {
     venueGroups.forEach((sessions, key) => {
       stopNumber++
       const [lat, lng] = key.split(',').map(Number)
-      const firstColor = getTrackColor(sessions[0].track)
-
       const icon = L.divIcon({
         className: '',
-        html: `<div style="width:24px;height:24px;border-radius:50%;background:${firstColor};color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:Inter,sans-serif;border:2px solid rgba(255,255,255,0.3);box-shadow:0 2px 4px rgba(0,0,0,0.3);">${stopNumber}</div>`,
+        html: `<div style="width:24px;height:24px;border-radius:50%;background:#FF6B35;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:Inter,sans-serif;border:2px solid rgba(255,255,255,0.4);box-shadow:0 2px 6px rgba(0,0,0,0.3);">${stopNumber}</div>`,
         iconSize: [24, 24],
         iconAnchor: [12, 12],
         popupAnchor: [0, -12],
