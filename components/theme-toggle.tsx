@@ -3,41 +3,38 @@
 import { useEffect, useState } from 'react'
 
 export function ThemeToggle() {
-  const [dark, setDark] = useState(true)
+  const [dark, setDark] = useState(() =>
+    typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
+  )
 
   useEffect(() => {
     const stored = localStorage.getItem('theme')
-    if (stored === 'light') {
-      setDark(false)
-      document.documentElement.classList.remove('dark')
+    if (stored) {
+      const isDark = stored === 'dark'
+      setDark(isDark)
+      document.documentElement.classList.toggle('dark', isDark)
     } else {
-      document.documentElement.classList.add('dark')
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      setDark(prefersDark)
+      document.documentElement.classList.toggle('dark', prefersDark)
     }
-  }, [])
 
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'd' || e.key === 'D') {
-        // Don't toggle if user is typing in an input
-        const tag = (e.target as HTMLElement).tagName
-        if (tag === 'INPUT' || tag === 'TEXTAREA') return
-        toggle()
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (!localStorage.getItem('theme')) {
+        setDark(e.matches)
+        document.documentElement.classList.toggle('dark', e.matches)
       }
     }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [dark])
+    mq.addEventListener('change', handleChange)
+    return () => mq.removeEventListener('change', handleChange)
+  }, [])
 
   const toggle = () => {
     setDark((prev) => {
       const next = !prev
-      if (next) {
-        document.documentElement.classList.add('dark')
-        localStorage.setItem('theme', 'dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-        localStorage.setItem('theme', 'light')
-      }
+      document.documentElement.classList.toggle('dark', next)
+      localStorage.setItem('theme', next ? 'dark' : 'light')
       return next
     })
   }
@@ -47,7 +44,6 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       className="fixed top-4 right-4 z-50 p-2 rounded-full bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors"
-      title={`Press "D" to toggle`}
     >
       {dark ? (
         <svg className="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
