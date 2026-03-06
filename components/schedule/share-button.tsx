@@ -11,15 +11,22 @@ export function ShareButton({ scheduleId, scheduleName }: ShareButtonProps) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const firstButtonRef = useRef<HTMLButtonElement>(null)
 
   const url = typeof window !== 'undefined'
     ? `${window.location.origin}/s/${scheduleId}`
     : `/s/${scheduleId}`
 
-  const shareText = `Check out my personalized SXSW 2026 schedule, built by AI`
+  const shareText = `Just got my SXSW 2026 schedule sorted by AI — here's what I'm hitting`
 
   useEffect(() => {
-    if (!open) return
+    if (!open) {
+      triggerRef.current?.focus()
+      return
+    }
+    // Focus the first button when dialog opens
+    requestAnimationFrame(() => firstButtonRef.current?.focus())
     function handleEsc(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false)
     }
@@ -35,9 +42,14 @@ export function ShareButton({ scheduleId, scheduleName }: ShareButtonProps) {
   }, [open])
 
   const copyLink = async () => {
-    await navigator.clipboard.writeText(url)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback for HTTP or unfocused pages
+      setCopied(false)
+    }
   }
 
   const shareToX = () => {
@@ -57,6 +69,7 @@ export function ShareButton({ scheduleId, scheduleName }: ShareButtonProps) {
   return (
     <div className="relative">
       <button
+        ref={triggerRef}
         onClick={() => setOpen(!open)}
         className="bg-white/10 text-text rounded-full px-6 py-2.5 hover:bg-white/20 active:bg-white/25 transition-all duration-200 text-sm"
       >
@@ -71,17 +84,20 @@ export function ShareButton({ scheduleId, scheduleName }: ShareButtonProps) {
         />
         <div
           ref={ref}
+          role="dialog"
+          aria-label="Share schedule"
           className="fixed bottom-4 left-4 right-4 sm:absolute sm:bottom-auto sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 bg-background border border-white/10 rounded-xl shadow-2xl p-4 z-[1100] popover-enter"
         >
           <p className="text-sm font-medium text-text mb-1">
-            Share {scheduleName}&apos;s Schedule
+            Share {scheduleName}&apos;s SXSW Schedule
           </p>
           <p className="text-xs text-muted mb-4">
-            Share your personalized SXSW schedule with friends.
+            Send this to your crew so you can actually find each other.
           </p>
 
           {/* Copy link */}
           <button
+            ref={firstButtonRef}
             onClick={copyLink}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left group"
           >
@@ -130,7 +146,7 @@ export function ShareButton({ scheduleId, scheduleName }: ShareButtonProps) {
             </div>
             <div>
               <p className="text-sm font-medium text-text">Share on Threads</p>
-              <p className="text-[11px] text-muted">Post to Threads</p>
+              <p className="text-[11px] text-muted">Post to your feed</p>
             </div>
           </button>
         </div>

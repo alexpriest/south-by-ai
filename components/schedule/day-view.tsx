@@ -16,7 +16,7 @@ export function DayView({ day, onSwap }: DayViewProps) {
   if (day.sessions.length === 0) {
     return (
       <p className="text-muted text-center py-12">
-        Nothing scheduled for this day. Hit &quot;Refine&quot; to add sessions.
+        Nothing here yet. Hit &quot;Refine with AI&quot; to add sessions to this day.
       </p>
     )
   }
@@ -75,7 +75,8 @@ export function DayView({ day, onSwap }: DayViewProps) {
             />
             <button
               onClick={() => toggleGroup(groupIndex)}
-              className="text-xs text-muted/60 hover:text-muted mt-1 ml-4 transition-colors"
+              aria-expanded={isExpanded}
+              className="text-xs text-muted/80 hover:text-muted mt-1 ml-4 transition-colors"
             >
               {isExpanded
                 ? `Hide ${alternatives.length} alternative${alternatives.length > 1 ? 's' : ''}`

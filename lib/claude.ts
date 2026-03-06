@@ -30,6 +30,25 @@ function extractJSON(raw: string): string {
   return text
 }
 
+function resolveScheduleSessions(
+  picks: { id: string; reason: string; priority: number }[],
+  sessionMap: Map<string, Session>
+): ScheduleSession[] {
+  const seenIds = new Set<string>()
+  const seenTitles = new Set<string>()
+  return picks
+    .map((pick) => {
+      if (seenIds.has(pick.id)) return null
+      seenIds.add(pick.id)
+      const session = sessionMap.get(pick.id)
+      if (!session) return null
+      if (seenTitles.has(session.title)) return null
+      seenTitles.add(session.title)
+      return { ...session, reason: pick.reason, priority: pick.priority || 2 } as ScheduleSession
+    })
+    .filter((s): s is ScheduleSession => s !== null)
+}
+
 interface ClaudeScheduleDay {
   date: string
   label: string
@@ -143,25 +162,11 @@ Response format:
 
   const sessionMap = new Map(sessionsForClaude.map((s) => [s.id, s]))
 
-  return parsed.map((day) => {
-    const seenIds = new Set<string>()
-    const seenTitles = new Set<string>()
-    return {
-      date: day.date,
-      label: day.label,
-      sessions: day.sessions
-        .map((pick) => {
-          if (seenIds.has(pick.id)) return null
-          seenIds.add(pick.id)
-          const session = sessionMap.get(pick.id)
-          if (!session) return null
-          if (seenTitles.has(session.title)) return null
-          seenTitles.add(session.title)
-          return { ...session, reason: pick.reason, priority: pick.priority || 2 } as ScheduleSession
-        })
-        .filter((s): s is ScheduleSession => s !== null),
-    }
-  })
+  return parsed.map((day) => ({
+    date: day.date,
+    label: day.label,
+    sessions: resolveScheduleSessions(day.sessions, sessionMap),
+  }))
 }
 
 export async function refineSchedule(
@@ -212,7 +217,7 @@ export async function refineSchedule(
   const client = getClient()
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 16384,
+    max_tokens: 8192,
     system: [
       {
         type: 'text',
@@ -239,14 +244,18 @@ Respond with valid JSON only — no markdown, no code fences. Use this format:
       ]
     }
   ]
-}
+}`,
+        cache_control: { type: 'ephemeral' },
+      },
+      {
+        type: 'text',
+        text: `User: ${schedule.name}
 
 Current schedule:
 ${JSON.stringify(currentScheduleSummary)}
 
 Available sessions (you can swap in any of these):
 ${JSON.stringify(availableSessionsForPrompt)}`,
-        cache_control: { type: 'ephemeral' },
       },
     ],
     messages: [
@@ -267,26 +276,11 @@ ${JSON.stringify(availableSessionsForPrompt)}`,
 
   const sessionMap = new Map(sessions.map((s) => [s.id, s]))
 
-  const days: DaySchedule[] = parsed.days.map((day) => {
-    const seenIds = new Set<string>()
-    const seenTitles = new Set<string>()
-    return {
-      date: day.date,
-      label: day.label,
-      sessions: day.sessions
-        .map((pick) => {
-          if (seenIds.has(pick.id)) return null
-          seenIds.add(pick.id)
-          const session = sessionMap.get(pick.id)
-          if (!session) return null
-          // Skip duplicate titles (e.g. same film screening in multiple rooms)
-          if (seenTitles.has(session.title)) return null
-          seenTitles.add(session.title)
-          return { ...session, reason: pick.reason, priority: pick.priority || 2 } as ScheduleSession
-        })
-        .filter((s): s is ScheduleSession => s !== null),
-    }
-  })
+  const days: DaySchedule[] = parsed.days.map((day) => ({
+    date: day.date,
+    label: day.label,
+    sessions: resolveScheduleSessions(day.sessions, sessionMap),
+  }))
 
   return { days, reply: parsed.reply }
 }

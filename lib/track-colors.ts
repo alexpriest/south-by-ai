@@ -21,7 +21,3 @@ const DEFAULT_COLOR = '#6B7280'
 export function getTrackColor(track: string): string {
   return TRACK_COLORS[track] || DEFAULT_COLOR
 }
-
-export function getTrackNames(): string[] {
-  return Object.keys(TRACK_COLORS)
-}

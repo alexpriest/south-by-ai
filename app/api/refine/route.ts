@@ -2,16 +2,16 @@ import { NextResponse } from 'next/server'
 import { getSessions } from '@/lib/sessions'
 import { refineSchedule } from '@/lib/claude'
 import { getSchedule, saveSchedule } from '@/lib/kv'
-import { checkRateLimit } from '@/lib/rate-limit'
+import { checkRefineLimit } from '@/lib/rate-limit'
 
 export const maxDuration = 60
 
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || 'unknown'
-    if (!checkRateLimit(`refine:${ip}`, 20, 60 * 60 * 1000)) {
+    const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for') || 'unknown'
+    if (!(await checkRefineLimit(ip))) {
       return NextResponse.json(
-        { error: 'Too many refinements. Please wait a bit.' },
+        { error: 'You\'ve been refining a lot — take a breather and try again in a few.' },
         { status: 429 }
       )
     }
@@ -20,27 +20,33 @@ export async function POST(request: Request) {
 
     if (!scheduleId || !message?.trim()) {
       return NextResponse.json(
-        { error: 'Missing scheduleId or message' },
+        { error: 'We need a message to work with. Type what you\'d like to change and try again.' },
         { status: 400 }
       )
     }
 
+    const trimmedMessage = message.trim().slice(0, 1000)
+
     const schedule = await getSchedule(scheduleId)
     if (!schedule) {
       return NextResponse.json(
-        { error: 'Schedule not found' },
+        { error: 'That schedule doesn\'t exist — double-check the link or start fresh.' },
         { status: 404 }
       )
     }
 
     const sessions = await getSessions()
-    const { days, reply } = await refineSchedule(schedule, message.trim(), sessions)
+    const { days, reply } = await refineSchedule(schedule, trimmedMessage, sessions)
 
     schedule.days = days
     schedule.chatHistory.push(
-      { role: 'user', content: message.trim() },
+      { role: 'user', content: trimmedMessage },
       { role: 'assistant', content: reply }
     )
+
+    if (schedule.chatHistory.length > 20) {
+      schedule.chatHistory = schedule.chatHistory.slice(-20)
+    }
 
     await saveSchedule(schedule)
 

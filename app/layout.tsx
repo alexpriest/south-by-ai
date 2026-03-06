@@ -31,10 +31,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`dark ${inter.variable} ${spaceGrotesk.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://unpkg.com" />
+        <link rel="preconnect" href="https://tile.openstreetmap.org" />
+      </head>
       <body className={`${inter.className} bg-background text-text min-h-screen`}>
         <ThemeToggle />
         {children}
-        <footer className="text-center py-4 text-[10px] text-muted/30">
+        <footer className="text-center py-4 text-[10px] text-muted/50">
           {process.env.NEXT_PUBLIC_BUILD_SHA}
         </footer>
       </body>

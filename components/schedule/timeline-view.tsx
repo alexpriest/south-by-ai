@@ -33,7 +33,7 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
   if (day.sessions.length === 0) {
     return (
       <p className="text-muted text-center py-12">
-        Nothing scheduled for this day. Hit &quot;Refine&quot; to add sessions.
+        Nothing here yet. Hit &quot;Refine with AI&quot; to add sessions to this day.
       </p>
     )
   }
@@ -54,7 +54,7 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
   const overlapGroups = findOverlapGroups(day.sessions)
 
   return (
-    <div className="relative" style={{ height: CONTAINER_HEIGHT }}>
+    <div className="relative overflow-hidden" style={{ height: CONTAINER_HEIGHT }}>
       {/* Hour grid lines and labels */}
       {hours.map((hour) => {
         const top = ((hour - START_HOUR) * 60 / TOTAL_MINUTES) * 100
@@ -64,7 +64,7 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
             className="absolute left-0 right-0 border-t border-white/5"
             style={{ top: `${top}%` }}
           >
-            <span className="absolute -top-2 left-0 w-12 text-xs text-muted/50 tabular-nums">
+            <span className="absolute -top-2 left-0 w-12 text-xs text-muted/70 tabular-nums">
               {hour.toString().padStart(2, '0')}:00
             </span>
           </div>

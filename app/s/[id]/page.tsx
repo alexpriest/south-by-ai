@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getSchedule } from '@/lib/kv'
+import { getCachedSchedule } from '@/lib/kv'
 import { ScheduleView } from './schedule-view'
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const schedule = await getSchedule(params.id)
+  const schedule = await getCachedSchedule(params.id)
   if (!schedule) return {}
 
   const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 }
 
 export default async function SchedulePage({ params }: { params: { id: string } }) {
-  const schedule = await getSchedule(params.id)
+  const schedule = await getCachedSchedule(params.id)
 
   if (!schedule) {
     notFound()

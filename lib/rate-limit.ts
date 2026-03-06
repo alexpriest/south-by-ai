@@ -1,17 +1,24 @@
-const requests = new Map<string, number[]>()
+import { Ratelimit } from '@upstash/ratelimit'
+import { kv } from '@vercel/kv'
 
-export function checkRateLimit(key: string, maxRequests: number, windowMs: number): boolean {
-  const now = Date.now()
-  const timestamps = requests.get(key) || []
+const generateLimiter = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(5, '1 h'),
+  prefix: 'ratelimit:gen',
+})
 
-  const valid = timestamps.filter((t) => now - t < windowMs)
+const refineLimiter = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(20, '1 h'),
+  prefix: 'ratelimit:refine',
+})
 
-  if (valid.length >= maxRequests) {
-    requests.set(key, valid)
-    return false
-  }
+export async function checkGenerateLimit(ip: string): Promise<boolean> {
+  const { success } = await generateLimiter.limit(ip)
+  return success
+}
 
-  valid.push(now)
-  requests.set(key, valid)
-  return true
+export async function checkRefineLimit(ip: string): Promise<boolean> {
+  const { success } = await refineLimiter.limit(ip)
+  return success
 }

@@ -26,7 +26,7 @@ export function ThemeToggle() {
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  })
+  }, [dark])
 
   const toggle = () => {
     setDark((prev) => {

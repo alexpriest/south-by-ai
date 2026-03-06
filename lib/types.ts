@@ -1,7 +1,7 @@
 export interface Session {
   id: string
   title: string
-  description: string
+  description?: string
   track: string
   type: string
   format: string
@@ -12,7 +12,7 @@ export interface Session {
   speakers: string[]
   url: string
   tags: string[]
-  imageUrl: string | null
+  imageUrl?: string | null
   badgeTypes: string[]
 }
 

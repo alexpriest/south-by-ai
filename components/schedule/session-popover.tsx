@@ -16,6 +16,10 @@ export function SessionPopover({ session, anchorRect, onClose }: SessionPopoverP
   const trackColor = getTrackColor(session.track)
 
   useEffect(() => {
+    ref.current?.focus()
+  }, [])
+
+  useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose()
     }
@@ -56,6 +60,9 @@ export function SessionPopover({ session, anchorRect, onClose }: SessionPopoverP
     <div
       ref={ref}
       style={style}
+      tabIndex={-1}
+      role="dialog"
+      aria-label={session.title}
       className="popover-enter bg-white dark:bg-[#1a1a1a] border border-black/10 dark:border-white/15 rounded-xl shadow-xl overflow-y-auto p-5"
     >
       <p className="text-xs text-muted">

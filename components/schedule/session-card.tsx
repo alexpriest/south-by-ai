@@ -32,15 +32,17 @@ export function SessionCard({ session, onSwap }: SessionCardProps) {
         </div>
       )}
       {isAlt && onSwap && (
-        <div
-          className="text-xs text-muted/60 hover:text-primary transition-colors cursor-pointer flex items-center gap-1 mb-2"
+        <button
+          type="button"
+          className="text-xs text-muted/80 hover:text-primary transition-colors cursor-pointer flex items-center gap-1 mb-2 bg-transparent border-none p-0 min-h-[44px]"
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSwap(); }}
+          aria-label={`Make "${session.title}" your top pick`}
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
           </svg>
-          <span>Switch to this</span>
-        </div>
+          <span>Make this my pick</span>
+        </button>
       )}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
@@ -85,7 +87,7 @@ export function SessionCard({ session, onSwap }: SessionCardProps) {
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0 mt-1">
-          <svg className="w-4 h-4 text-muted/40 group-hover:text-muted transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-4 h-4 text-muted/70 group-hover:text-muted transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
         </div>

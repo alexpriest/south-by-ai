@@ -87,6 +87,24 @@ body {
 :root:not(.dark) .hover\:border-white\/20:hover {
   border-color: rgba(0, 0, 0, 0.15) !important;
 }
+:root:not(.dark) .bg-white\/\[0\.03\] {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+:root:not(.dark) .bg-white\/\[0\.06\] {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+:root:not(.dark) .bg-white\/25 {
+  background-color: rgba(0, 0, 0, 0.12) !important;
+}
+:root:not(.dark) .active\:bg-white\/25:active {
+  background-color: rgba(0, 0, 0, 0.12) !important;
+}
+:root:not(.dark) .border-white\/\[0\.06\] {
+  border-color: rgba(0, 0, 0, 0.04) !important;
+}
+:root:not(.dark) .border-white\/15 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
 :root:not(.dark) .text-text\/70 {
   color: rgba(26, 26, 26, 0.7) !important;
 }
@@ -221,4 +239,13 @@ body {
 @keyframes popoverIn {
   from { opacity: 0; transform: translateY(4px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

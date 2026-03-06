@@ -14,8 +14,8 @@ const LOADING_MESSAGES = [
   'Scanning 3,700+ sessions so you don\'t have to...',
   'Debating whether to schedule around taco breaks...',
   'Calculating optimal 6th Street proximity...',
-  'Arguing with Claude about your music taste...',
-  'Cross-referencing badge levels with session access...',
+  'Arguing with the AI about your music taste...',
+  'Making sure your badge actually gets you in...',
   'Squeezing in one more panel before happy hour...',
   'Filtering out sessions that are just startup pitches in disguise...',
   'Plotting the fastest route from the Convention Center to Rainey St...',
@@ -125,11 +125,11 @@ export function QuizFlow() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  })
+  }, [step, quiz, loading])
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 max-w-md mx-auto">
+      <div className="flex flex-col items-center justify-center py-24 max-w-md mx-auto" role="status" aria-live="polite">
         <div className="relative w-16 h-16 mb-8">
           <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
           <div className="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin" />
@@ -151,7 +151,7 @@ export function QuizFlow() {
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs text-muted">Step {stepIndex + 1} of {STEPS.length}</span>
         </div>
-        <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+        <div className="h-1 bg-white/5 rounded-full overflow-hidden" role="progressbar" aria-valuenow={stepIndex + 1} aria-valuemin={1} aria-valuemax={STEPS.length} aria-label="Quiz progress">
           <div
             className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
@@ -182,7 +182,7 @@ export function QuizFlow() {
       </div>
 
       {error && (
-        <p className="text-red-400 text-sm mb-4">{error}</p>
+        <p role="alert" className="text-red-400 text-sm mb-4">{error}</p>
       )}
 
       {/* Navigation */}

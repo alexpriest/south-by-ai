@@ -39,13 +39,13 @@ export default function Home() {
         <QuizFlow />
       </section>
 
-      <footer className="border-t border-white/5 py-8 text-center text-xs text-muted/60">
+      <footer className="border-t border-white/5 py-8 text-center text-xs text-muted/80">
         <p>
           Built by{' '}
           <a href="https://alexpriest.com" target="_blank" rel="noopener noreferrer" className="text-muted/80 hover:text-accent transition-colors underline underline-offset-2">
             Alex Priest
           </a>
-          {' '}with Claude Code.
+          {' '}with Claude.
         </p>
         <p className="mt-2">
           <a href="https://buymeacoffee.com/alexpriest" target="_blank" rel="noopener noreferrer" className="text-muted/80 hover:text-accent transition-colors underline underline-offset-2">
@@ -55,6 +55,9 @@ export default function Home() {
         <p className="mt-2">
           Not affiliated with or endorsed by SXSW LLC. Session data from the public SXSW schedule.
         </p>
+        {process.env.NEXT_PUBLIC_BUILD_SHA && (
+          <p className="mt-2 text-[10px] text-muted/30">{process.env.NEXT_PUBLIC_BUILD_SHA}</p>
+        )}
       </footer>
     </main>
   )

@@ -6,6 +6,7 @@ function escapeIcsText(text: string): string {
     .replace(/\\/g, '\\\\')
     .replace(/;/g, '\\;')
     .replace(/,/g, '\\,')
+    .replace(/\r/g, '')
     .replace(/\n/g, '\\n')
 }
 
@@ -40,7 +41,7 @@ export async function GET(
         session.url ? `View on SXSW: ${session.url}` : '',
       ]
         .filter(Boolean)
-        .join('\\n')
+        .join('\n')
 
       events.push(
         [
@@ -51,7 +52,7 @@ export async function GET(
           `SUMMARY:${escapeIcsText(session.title)}`,
           `DESCRIPTION:${escapeIcsText(description)}`,
           session.venue ? `LOCATION:${escapeIcsText(session.venue)}` : '',
-          session.url ? `URL:${session.url}` : '',
+          session.url ? `URL:${escapeIcsText(session.url)}` : '',
           'END:VEVENT',
         ]
           .filter(Boolean)

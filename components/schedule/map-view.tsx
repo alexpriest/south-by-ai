@@ -5,6 +5,10 @@ import { getVenueCoords } from '@/lib/venue-coords'
 import { getTrackColor } from '@/lib/track-colors'
 import type { DaySchedule, ScheduleSession } from '@/lib/types'
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 declare const L: any
 
 interface MapViewProps {
@@ -22,16 +26,17 @@ function getTimeFilter(session: ScheduleSession): TimeFilter {
 
 export function MapView({ day }: MapViewProps) {
   const mapRef = useRef<any>(null)
+  const markersRef = useRef<any>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [loaded, setLoaded] = useState(false)
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
   const [hasMarkers, setHasMarkers] = useState(true)
   const [calloutMessage, setCalloutMessage] = useState<string | null>(null)
 
+  // Load Leaflet script once
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    // Check if Leaflet is already loaded
     if ((window as any).L) {
       setLoaded(true)
       return
@@ -46,25 +51,17 @@ export function MapView({ day }: MapViewProps) {
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
     script.onload = () => setLoaded(true)
     document.head.appendChild(script)
-
-    return () => {
-      // Don't remove script/link — they can stay for future use
-    }
   }, [])
 
+  // Initialize map once when Leaflet is loaded
   useEffect(() => {
-    if (!loaded || !containerRef.current) return
+    if (!loaded || !containerRef.current || typeof L === 'undefined') return
+    if (mapRef.current) return
 
     const isDark = document.documentElement.classList.contains('dark')
     const tileUrl = isDark
       ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
       : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-
-    // Clean up previous map
-    if (mapRef.current) {
-      mapRef.current.remove()
-      mapRef.current = null
-    }
 
     const map = L.map(containerRef.current).setView([30.265, -97.742], 14)
     mapRef.current = map
@@ -73,6 +70,21 @@ export function MapView({ day }: MapViewProps) {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 19,
     }).addTo(map)
+
+    return () => {
+      mapRef.current?.remove()
+      mapRef.current = null
+      markersRef.current = null
+    }
+  }, [loaded])
+
+  // Update markers when data or filter changes
+  useEffect(() => {
+    if (!mapRef.current || typeof L === 'undefined') return
+
+    // Clear previous markers/polylines
+    if (markersRef.current) markersRef.current.clearLayers()
+    markersRef.current = L.layerGroup().addTo(mapRef.current)
 
     // Filter sessions by time
     const filtered = day.sessions.filter((s) => {
@@ -94,7 +106,7 @@ export function MapView({ day }: MapViewProps) {
     })
 
     // Compute callout message based on venue distribution
-    const uniqueVenues = new Map<string, string>() // key -> venue name
+    const uniqueVenues = new Map<string, string>()
     venueGroups.forEach((sessions, key) => {
       uniqueVenues.set(key, sessions[0].venue)
     })
@@ -141,7 +153,7 @@ export function MapView({ day }: MapViewProps) {
         popupAnchor: [0, -12],
       })
 
-      const marker = L.marker([lat, lng], { icon }).addTo(map)
+      const marker = L.marker([lat, lng], { icon }).addTo(markersRef.current)
 
       const venueName = sessions[0].venue.split(',').pop()?.trim() || sessions[0].venue
       const popupHtml = sessions.map((s, i) => {
@@ -150,13 +162,13 @@ export function MapView({ day }: MapViewProps) {
           <div style="padding: 8px 0;${i > 0 ? ' border-top: 1px solid #333;' : ''}">
             <div style="display: flex; align-items: center; gap: 6px;">
               ${s.priority === 1 ? '<span style="color: #FF6B35;">&#9733;</span>' : ''}
-              <strong style="font-size: 13px;">${s.title}</strong>
+              <strong style="font-size: 13px;">${escapeHtml(s.title)}</strong>
             </div>
             <div style="font-size: 11px; color: #999; margin-top: 4px;">
-              ${s.startTime} &ndash; ${s.endTime}
+              ${escapeHtml(s.startTime)} &ndash; ${escapeHtml(s.endTime)}
             </div>
             <span style="display: inline-block; background: ${color}22; color: ${color}; padding: 1px 6px; border-radius: 8px; font-size: 10px; margin-top: 4px;">
-              ${s.track}
+              ${escapeHtml(s.track)}
             </span>
           </div>
         `
@@ -164,7 +176,7 @@ export function MapView({ day }: MapViewProps) {
 
       const popupContent = `
         <div style="font-family: Inter, sans-serif; min-width: 220px; max-height: 300px; overflow-y: auto;">
-          <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">${venueName}${sessions.length > 1 ? ` &middot; ${sessions.length} sessions` : ''}</div>
+          <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">${escapeHtml(venueName)}${sessions.length > 1 ? ` &middot; ${sessions.length} sessions` : ''}</div>
           ${popupHtml}
         </div>
       `
@@ -183,23 +195,15 @@ export function MapView({ day }: MapViewProps) {
         weight: 2,
         opacity: 0.4,
         dashArray: '8, 8',
-      }).addTo(map)
-
+      }).addTo(markersRef.current)
     }
 
     // Fit bounds if we have points
     if (routePoints.length > 0) {
       const bounds = L.latLngBounds(routePoints)
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 })
+      mapRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 })
     }
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove()
-        mapRef.current = null
-      }
-    }
-  }, [loaded, day, timeFilter])
+  }, [day, timeFilter, loaded])
 
   const filters: { value: TimeFilter; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -243,23 +247,11 @@ export function MapView({ day }: MapViewProps) {
         {!hasMarkers && loaded && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <p className="text-muted text-center py-8 text-sm">
-              No mapped venues for this day&apos;s sessions.
+              We don&apos;t have venue locations for these sessions yet. Try the list or timeline view instead.
             </p>
           </div>
         )}
       </div>
-
-      {/* Pulse animation */}
-      <style jsx global>{`
-        .pulse-marker {
-          animation: pulse-ring 2s ease-out infinite;
-        }
-        @keyframes pulse-ring {
-          0% { opacity: 0.9; }
-          50% { opacity: 0.5; }
-          100% { opacity: 0.9; }
-        }
-      `}</style>
     </div>
   )
 }

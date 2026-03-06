@@ -1,33 +1,16 @@
 import { ImageResponse } from '@vercel/og'
-import { getSchedule } from '@/lib/kv'
+import { getCachedSchedule } from '@/lib/kv'
+import { getTrackColor } from '@/lib/track-colors'
 
 export const runtime = 'edge'
 export const alt = 'South by AI - Your SXSW Schedule'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
-const TRACK_COLORS: Record<string, string> = {
-  'Tech & AI': '#3B82F6',
-  'Design': '#8B5CF6',
-  'Culture': '#EC4899',
-  'Health': '#10B981',
-  'Creator Economy': '#F59E0B',
-  'Brand & Marketing': '#EF4444',
-  'Cities & Climate': '#06B6D4',
-  'Startups': '#FF6B35',
-  'Startups & Investment': '#FF6B35',
-  'Sports & Gaming': '#84CC16',
-  'Music': '#A855F7',
-  'Film & TV': '#F43F5E',
-  'Workplace': '#6366F1',
-  'Global': '#14B8A6',
-  'Headliner': '#00D4AA',
-}
-
 export default async function OGImage({ params }: { params: { id: string } }) {
   let schedule
   try {
-    schedule = await getSchedule(params.id)
+    schedule = await getCachedSchedule(params.id)
   } catch {
     // fall through to fallback
   }
@@ -51,7 +34,12 @@ export default async function OGImage({ params }: { params: { id: string } }) {
           South by AI
         </div>
       ),
-      { ...size }
+      {
+        ...size,
+        headers: {
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        },
+      }
     )
   }
 
@@ -110,7 +98,7 @@ export default async function OGImage({ params }: { params: { id: string } }) {
               marginBottom: 32,
             }}
           >
-            {`${schedule.name}'s SXSW Schedule`}
+            {`${schedule.name}'s SXSW Schedule — Built by AI`}
           </div>
         </div>
 
@@ -132,7 +120,7 @@ export default async function OGImage({ params }: { params: { id: string } }) {
                   width: 10,
                   height: 10,
                   borderRadius: '50%',
-                  backgroundColor: TRACK_COLORS[track] || '#6B7280',
+                  backgroundColor: getTrackColor(track),
                 }}
               />
               <span style={{ fontSize: 18, color: '#F5F5F5' }}>{track}</span>
@@ -154,6 +142,11 @@ export default async function OGImage({ params }: { params: { id: string } }) {
         </div>
       </div>
     ),
-    { ...size }
+    {
+      ...size,
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    }
   )
 }

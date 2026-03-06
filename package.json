@@ -13,6 +13,7 @@
     "@types/node": "^25.3.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@upstash/ratelimit": "^2.0.8",
     "@vercel/kv": "^3.0.0",
     "@vercel/og": "^0.11.0",
     "autoprefixer": "^10.4.27",
