@@ -25,7 +25,12 @@ const TRACK_COLORS: Record<string, string> = {
 }
 
 export default async function OGImage({ params }: { params: { id: string } }) {
-  const schedule = await getSchedule(params.id)
+  let schedule
+  try {
+    schedule = await getSchedule(params.id)
+  } catch {
+    // fall through to fallback
+  }
 
   if (!schedule) {
     return new ImageResponse(

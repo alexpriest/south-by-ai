@@ -13,10 +13,12 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     openGraph: {
       title: `${schedule.name}'s SXSW Schedule`,
       description: `Personalized SXSW 2026 schedule built by AI.`,
+      images: [`https://southby.ai/s/${params.id}/opengraph-image`],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${schedule.name}'s SXSW Schedule`,
+      images: [`https://southby.ai/s/${params.id}/opengraph-image`],
     },
   }
 }

@@ -31,6 +31,17 @@ export function SessionCard({ session, onSwap }: SessionCardProps) {
           <span className="text-[11px] font-semibold text-primary uppercase tracking-wider">Top Pick</span>
         </div>
       )}
+      {isAlt && onSwap && (
+        <div
+          className="text-xs text-muted/60 hover:text-primary transition-colors cursor-pointer flex items-center gap-1 mb-2"
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSwap(); }}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+          <span>Switch to this</span>
+        </div>
+      )}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <h3 className="font-heading text-base font-bold group-hover:text-primary transition-colors">
@@ -74,15 +85,6 @@ export function SessionCard({ session, onSwap }: SessionCardProps) {
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0 mt-1">
-          {onSwap && (session.priority || 2) >= 2 && (
-            <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSwap(); }}
-              className="text-xs text-primary hover:text-primary/80 font-medium transition-colors shrink-0"
-              title="Make this your top pick"
-            >
-              Promote
-            </button>
-          )}
           <svg className="w-4 h-4 text-muted/40 group-hover:text-muted transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>

@@ -64,9 +64,14 @@ export function ShareButton({ scheduleId, scheduleName }: ShareButtonProps) {
       </button>
 
       {open && (
+        <>
+        <div
+          className="fixed inset-0 bg-black/40 z-[1099] sm:hidden"
+          onClick={() => setOpen(false)}
+        />
         <div
           ref={ref}
-          className="absolute right-0 top-full mt-2 w-72 bg-background border border-white/10 rounded-xl shadow-2xl p-4 z-[1100] popover-enter"
+          className="fixed bottom-4 left-4 right-4 sm:absolute sm:bottom-auto sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 bg-background border border-white/10 rounded-xl shadow-2xl p-4 z-[1100] popover-enter"
         >
           <p className="text-sm font-medium text-text mb-1">
             Share {scheduleName}&apos;s Schedule
@@ -129,6 +134,7 @@ export function ShareButton({ scheduleId, scheduleName }: ShareButtonProps) {
             </div>
           </button>
         </div>
+        </>
       )}
     </div>
   )

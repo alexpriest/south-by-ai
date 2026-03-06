@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { DaySchedule, ScheduleSession } from '@/lib/types'
 import { TimelineBlock } from './timeline-block'
 import { SessionPopover } from './session-popover'
+import { parseTime, findOverlapGroups } from '@/lib/schedule-utils'
 
 interface TimelineViewProps {
   day: DaySchedule
@@ -15,41 +16,6 @@ const END_HOUR = 23
 const TOTAL_MINUTES = (END_HOUR - START_HOUR) * 60 // 840
 const CONTAINER_HEIGHT = 840 // 60px per hour
 const START_MINUTES = START_HOUR * 60 // 540
-
-function parseTime(time: string): number {
-  const [h, m] = time.split(':').map(Number)
-  return h * 60 + m
-}
-
-function findOverlapGroups(sessions: ScheduleSession[]): ScheduleSession[][] {
-  const sorted = [...sessions].sort(
-    (a, b) => parseTime(a.startTime) - parseTime(b.startTime)
-  )
-
-  const groups: ScheduleSession[][] = []
-  let currentGroup: ScheduleSession[] = []
-  let groupEnd = 0
-
-  for (const session of sorted) {
-    const start = parseTime(session.startTime)
-    const end = parseTime(session.endTime)
-
-    if (currentGroup.length === 0 || start < groupEnd) {
-      currentGroup.push(session)
-      groupEnd = Math.max(groupEnd, end)
-    } else {
-      groups.push(currentGroup)
-      currentGroup = [session]
-      groupEnd = end
-    }
-  }
-
-  if (currentGroup.length > 0) {
-    groups.push(currentGroup)
-  }
-
-  return groups
-}
 
 function isSXSWDate(dateStr: string): boolean {
   const d = new Date(dateStr + 'T00:00:00')

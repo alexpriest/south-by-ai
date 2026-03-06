@@ -26,6 +26,7 @@ export function MapView({ day }: MapViewProps) {
   const [loaded, setLoaded] = useState(false)
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
   const [hasMarkers, setHasMarkers] = useState(true)
+  const [calloutMessage, setCalloutMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -92,27 +93,54 @@ export function MapView({ day }: MapViewProps) {
       venueGroups.get(key)!.push(session)
     })
 
+    // Compute callout message based on venue distribution
+    const uniqueVenues = new Map<string, string>() // key -> venue name
+    venueGroups.forEach((sessions, key) => {
+      uniqueVenues.set(key, sessions[0].venue)
+    })
+
+    const timeLabel = timeFilter === 'all' ? 'today' : timeFilter
+    if (uniqueVenues.size === 1) {
+      const firstVenue = Array.from(uniqueVenues.values())[0]
+      const venueName = firstVenue.split(',').pop()?.trim() || firstVenue
+      setCalloutMessage(
+        timeFilter === 'all'
+          ? `All your sessions today are at ${venueName} — no walking needed!`
+          : `All your ${timeLabel} sessions are at ${venueName} — no walking needed!`
+      )
+    } else if (uniqueVenues.size >= 2) {
+      const coords = Array.from(uniqueVenues.keys()).map(k => k.split(',').map(Number))
+      const lats = coords.map(c => c[0])
+      const lngs = coords.map(c => c[1])
+      const latSpread = Math.max(...lats) - Math.min(...lats)
+      const lngSpread = Math.max(...lngs) - Math.min(...lngs)
+      if (latSpread < 0.002 && lngSpread < 0.002) {
+        setCalloutMessage('Your sessions are clustered nearby — easy walking day!')
+      } else {
+        setCalloutMessage(null)
+      }
+    } else {
+      setCalloutMessage(null)
+    }
+
     // Add one marker per venue with multi-session popup
     const routePoints: [number, number][] = []
+    let stopNumber = 0
 
     venueGroups.forEach((sessions, key) => {
+      stopNumber++
       const [lat, lng] = key.split(',').map(Number)
-      const bestPriority = Math.min(...sessions.map(s => s.priority || 2))
-      const isTopPick = bestPriority === 1
       const firstColor = getTrackColor(sessions[0].track)
-      const radius = isTopPick ? 10 : 7
-      const opacity = isTopPick ? 0.9 : 0.6
-      const fillOpacity = isTopPick ? 0.8 : 0.5
 
-      const marker = L.circleMarker([lat, lng], {
-        radius,
-        color: firstColor,
-        fillColor: firstColor,
-        fillOpacity,
-        opacity,
-        weight: 2,
-        className: isTopPick ? 'pulse-marker' : '',
-      }).addTo(map)
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="width:24px;height:24px;border-radius:50%;background:${firstColor};color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:Inter,sans-serif;border:2px solid rgba(255,255,255,0.3);box-shadow:0 2px 4px rgba(0,0,0,0.3);">${stopNumber}</div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+        popupAnchor: [0, -12],
+      })
+
+      const marker = L.marker([lat, lng], { icon }).addTo(map)
 
       const venueName = sessions[0].venue.split(',').pop()?.trim() || sessions[0].venue
       const popupHtml = sessions.map((s, i) => {
@@ -155,6 +183,25 @@ export function MapView({ day }: MapViewProps) {
         opacity: 0.4,
         dashArray: '8, 8',
       }).addTo(map)
+
+      // Add direction arrows at midpoints between stops
+      for (let i = 0; i < routePoints.length - 1; i++) {
+        const [lat1, lng1] = routePoints[i]
+        const [lat2, lng2] = routePoints[i + 1]
+        const midLat = (lat1 + lat2) / 2
+        const midLng = (lng1 + lng2) / 2
+        const angle = Math.atan2(lng2 - lng1, lat2 - lat1) * (180 / Math.PI)
+
+        L.marker([midLat, midLng], {
+          icon: L.divIcon({
+            className: '',
+            html: `<div style="transform:rotate(${90 - angle}deg);color:#FF6B35;font-size:16px;opacity:0.6;">▶</div>`,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8],
+          }),
+          interactive: false,
+        }).addTo(map)
+      }
     }
 
     // Fit bounds if we have points
@@ -196,6 +243,13 @@ export function MapView({ day }: MapViewProps) {
           </button>
         ))}
       </div>
+
+      {/* Callout banner */}
+      {calloutMessage && (
+        <div className="mb-3 px-4 py-2.5 rounded-xl bg-accent/10 border border-accent/20 text-sm text-accent">
+          {calloutMessage}
+        </div>
+      )}
 
       {/* Map container */}
       <div
