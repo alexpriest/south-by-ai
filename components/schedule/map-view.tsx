@@ -1,13 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { getVenueCoords } from '@/lib/venue-coords'
 import { getTrackColor } from '@/lib/track-colors'
 import type { DaySchedule, ScheduleSession } from '@/lib/types'
-
-function escapeHtml(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-}
 
 declare const L: any
 
@@ -45,12 +41,11 @@ export function MapView({ day }: MapViewProps) {
   const [loaded, setLoaded] = useState(false)
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
   const [activeStop, setActiveStop] = useState<number | null>(null)
-  const [stops, setStops] = useState<VenueStop[]>([])
 
-  // Build stops from day data
-  const buildStops = useCallback((filter: TimeFilter): VenueStop[] => {
+  // Compute stops eagerly from day data + filter (no dependency on map)
+  const stops = useMemo((): VenueStop[] => {
     const filtered = day.sessions.filter((s) => {
-      if (filter !== 'all' && getTimeFilter(s) !== filter) return false
+      if (timeFilter !== 'all' && getTimeFilter(s) !== timeFilter) return false
       return getVenueCoords(s.venue) !== null
     })
 
@@ -83,7 +78,12 @@ export function MapView({ day }: MapViewProps) {
     })
 
     return result
-  }, [day])
+  }, [day, timeFilter])
+
+  // Reset active stop when filter changes
+  useEffect(() => {
+    setActiveStop(null)
+  }, [timeFilter])
 
   // Load Leaflet script once
   useEffect(() => {
@@ -128,7 +128,7 @@ export function MapView({ day }: MapViewProps) {
     }
   }, [loaded])
 
-  // Update markers when data or filter changes
+  // Update markers when stops change
   useEffect(() => {
     if (!mapRef.current || typeof L === 'undefined') return
 
@@ -136,13 +136,9 @@ export function MapView({ day }: MapViewProps) {
     markersRef.current = L.layerGroup().addTo(mapRef.current)
     markerObjsRef.current = new Map()
 
-    const newStops = buildStops(timeFilter)
-    setStops(newStops)
-    setActiveStop(null)
-
     const routePoints: [number, number][] = []
 
-    newStops.forEach((stop) => {
+    stops.forEach((stop) => {
       const icon = L.divIcon({
         className: '',
         html: `<div class="map-stop-marker" data-stop="${stop.stopNumber}" style="width:28px;height:28px;border-radius:50%;background:${stop.color};color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:Inter,sans-serif;border:2px solid rgba(255,255,255,0.4);box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;transition:transform 0.15s ease,box-shadow 0.15s ease;">${stop.stopNumber}</div>`,
@@ -175,7 +171,7 @@ export function MapView({ day }: MapViewProps) {
       const bounds = L.latLngBounds(routePoints)
       mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 })
     }
-  }, [day, timeFilter, loaded, buildStops])
+  }, [stops, loaded])
 
   // Highlight active marker on map
   useEffect(() => {
@@ -192,7 +188,6 @@ export function MapView({ day }: MapViewProps) {
     if (activeStop !== null) {
       const stop = stops.find(s => s.stopNumber === activeStop)
       if (stop) {
-        // Highlight the active marker
         const activeEl = document.querySelector(`.map-stop-marker[data-stop="${activeStop}"]`) as HTMLElement
         if (activeEl) {
           activeEl.style.transform = 'scale(1.35)'
@@ -200,10 +195,8 @@ export function MapView({ day }: MapViewProps) {
           activeEl.style.zIndex = '100'
         }
 
-        // Pan to the marker
         mapRef.current.panTo([stop.lat, stop.lng], { animate: true, duration: 0.3 })
 
-        // Scroll list item into view
         const listItem = document.getElementById(`stop-${activeStop}`)
         listItem?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       }
@@ -240,10 +233,10 @@ export function MapView({ day }: MapViewProps) {
         ))}
       </div>
 
-      {stops.length === 0 && loaded ? (
+      {stops.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-muted text-sm">
-            We don&apos;t have venue locations for these sessions yet. Try the list or timeline view instead.
+            No mapped sessions for this {timeFilter === 'all' ? 'day' : 'time period'}. Try the list or timeline view instead.
           </p>
         </div>
       ) : (
@@ -260,11 +253,9 @@ export function MapView({ day }: MapViewProps) {
               style={{ width: '100%', height: '100%' }}
             />
             {/* Stop count badge */}
-            {stops.length > 0 && (
-              <div className="absolute top-3 left-3 z-[1000] bg-background/80 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5 text-xs text-muted">
-                {stops.length} stop{stops.length !== 1 ? 's' : ''}
-              </div>
-            )}
+            <div className="absolute top-3 left-3 z-[1000] bg-background/80 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5 text-xs text-muted">
+              {stops.length} stop{stops.length !== 1 ? 's' : ''}
+            </div>
           </div>
 
           {/* Session sidebar */}
@@ -341,10 +332,6 @@ export function MapView({ day }: MapViewProps) {
                   </div>
                 </div>
               ))}
-
-              {stops.length === 0 && (
-                <p className="text-muted text-sm text-center py-8">No mapped sessions for this filter.</p>
-              )}
             </div>
           </div>
         </div>
