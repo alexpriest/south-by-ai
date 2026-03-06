@@ -50,7 +50,6 @@ export function MapView({ day }: MapViewProps) {
   // Build stops from day data
   const buildStops = useCallback((filter: TimeFilter): VenueStop[] => {
     const filtered = day.sessions.filter((s) => {
-      if (s.priority !== 1) return false
       if (filter !== 'all' && getTimeFilter(s) !== filter) return false
       return getVenueCoords(s.venue) !== null
     })
