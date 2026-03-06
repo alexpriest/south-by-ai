@@ -120,6 +120,7 @@ export function QuizFlow() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter' && !e.shiftKey && canAdvance() && !loading) {
+        e.preventDefault()
         next()
       }
     }
