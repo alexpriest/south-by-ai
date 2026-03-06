@@ -34,6 +34,9 @@ export default function RootLayout({
       <body className={`${inter.className} bg-background text-text min-h-screen`}>
         <ThemeToggle />
         {children}
+        <footer className="text-center py-4 text-[10px] text-muted/30">
+          {process.env.NEXT_PUBLIC_BUILD_SHA}
+        </footer>
       </body>
     </html>
   )
