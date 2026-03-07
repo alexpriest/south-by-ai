@@ -219,7 +219,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">
+      <div className={`mx-auto px-4 md:px-8 py-8 ${viewMode === 'map' ? 'max-w-7xl' : 'max-w-4xl'}`}>
         <div className="flex justify-end mb-4">
           <a
             href="https://schedule.sxsw.com/2026/search/event"

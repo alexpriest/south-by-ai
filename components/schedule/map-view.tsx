@@ -41,6 +41,7 @@ export function MapView({ day }: MapViewProps) {
   const [loaded, setLoaded] = useState(false)
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
   const [activeStop, setActiveStop] = useState<number | null>(null)
+  const [mapInteractive, setMapInteractive] = useState(false)
 
   // Compute stops eagerly from day data + filter (no dependency on map)
   const stops = useMemo((): VenueStop[] => {
@@ -111,7 +112,14 @@ export function MapView({ day }: MapViewProps) {
       ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
       : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
 
-    const map = L.map(containerRef.current, { zoomControl: false }).setView([30.265, -97.742], 14)
+    const isMobile = window.innerWidth < 1024
+    const map = L.map(containerRef.current, {
+      zoomControl: false,
+      dragging: !isMobile,
+      scrollWheelZoom: !isMobile,
+      tap: !isMobile,
+      touchZoom: !isMobile,
+    }).setView([30.265, -97.742], 14)
     mapRef.current = map
 
     L.control.zoom({ position: 'topright' }).addTo(map)
@@ -126,7 +134,17 @@ export function MapView({ day }: MapViewProps) {
       mapRef.current = null
       markersRef.current = null
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded])
+
+  // Enable map interaction on mobile when user taps
+  useEffect(() => {
+    if (!mapInteractive || !mapRef.current) return
+    const map = mapRef.current
+    map.dragging.enable()
+    map.touchZoom.enable()
+    map.tap?.enable()
+  }, [mapInteractive])
 
   // Update markers when stops change
   useEffect(() => {
@@ -241,11 +259,11 @@ export function MapView({ day }: MapViewProps) {
         </div>
       ) : (
         /* Map + Sidebar layout */
-        <div className="flex flex-col lg:flex-row gap-4 rounded-xl overflow-hidden border border-white/10">
+        <div className="flex flex-col lg:flex-row rounded-xl overflow-hidden border border-white/10">
           {/* Map */}
           <div
-            className="relative lg:flex-1"
-            style={{ minHeight: '350px', height: 'calc(50vh - 100px)' }}
+            className="relative lg:flex-1 min-h-[300px] h-[50vh] lg:min-h-[500px] lg:h-auto"
+            style={{ maxHeight: 'calc(100vh - 280px)' }}
           >
             <div
               ref={containerRef}
@@ -256,13 +274,23 @@ export function MapView({ day }: MapViewProps) {
             <div className="absolute top-3 left-3 z-[1000] bg-background/80 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5 text-xs text-muted">
               {stops.length} stop{stops.length !== 1 ? 's' : ''}
             </div>
+            {/* Mobile: tap to interact overlay */}
+            {!mapInteractive && (
+              <div
+                className="absolute inset-0 z-[1001] flex items-center justify-center lg:hidden"
+                onClick={() => setMapInteractive(true)}
+              >
+                <span className="bg-background/80 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 text-sm text-muted">
+                  Tap to interact with map
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Session sidebar */}
           <div
             ref={listRef}
-            className="lg:w-[340px] shrink-0 overflow-y-auto bg-white/[0.02] lg:border-l border-white/10"
-            style={{ maxHeight: 'calc(100vh - 300px)' }}
+            className="lg:w-[340px] shrink-0 overflow-y-auto bg-white/[0.02] lg:border-l border-white/10 max-h-[50vh] lg:max-h-[calc(100vh-280px)]"
           >
             <div className="p-3 space-y-1">
               {stops.map((stop) => (
