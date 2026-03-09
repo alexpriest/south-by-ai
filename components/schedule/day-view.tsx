@@ -76,7 +76,7 @@ export function DayView({ day, onSwap }: DayViewProps) {
             <button
               onClick={() => toggleGroup(groupIndex)}
               aria-expanded={isExpanded}
-              className="text-xs text-muted/80 hover:text-muted mt-1 ml-4 transition-colors"
+              className="text-xs text-muted hover:text-muted mt-1 ml-4 transition-colors"
             >
               {isExpanded
                 ? `Hide ${alternatives.length} alternative${alternatives.length > 1 ? 's' : ''}`

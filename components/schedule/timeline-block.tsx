@@ -26,15 +26,15 @@ export function TimelineBlock({ session, style, isTopPick, compact, onClick, onS
       }}
       className={`absolute text-left border-l-[3px] rounded-r-lg px-3 py-1.5 transition-all duration-200 overflow-hidden cursor-pointer group ${
         isAlternative
-          ? 'bg-white/[0.03] border-t border-r border-b border-white/[0.06] opacity-50 hover:opacity-80 hover:bg-white/[0.06]'
-          : 'bg-white/5 backdrop-blur-md border-t border-r border-b border-white/10 hover:bg-white/[0.08]'
+          ? 'bg-ss border-t border-r border-b border-b1 opacity-50 hover:opacity-80 hover:bg-s1'
+          : 'bg-s1 backdrop-blur-md border-t border-r border-b border-b1 hover:bg-sh'
       }`}
     >
       {/* Top pick: full detail */}
       {!compact && (
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-muted/80 tabular-nums shrink-0">
+            <span className="text-micro text-muted tabular-nums shrink-0">
               {session.startTime} – {session.endTime}
             </span>
             {isTopPick && (
@@ -51,7 +51,7 @@ export function TimelineBlock({ session, style, isTopPick, compact, onClick, onS
               className="w-1.5 h-1.5 rounded-full shrink-0"
               style={{ backgroundColor: trackColor }}
             />
-            <span className="text-[10px] text-muted/80 truncate">
+            <span className="text-micro text-muted truncate">
               {session.track}
               {session.venue && ` · ${session.venue.split(',')[0]}`}
             </span>
@@ -71,7 +71,7 @@ export function TimelineBlock({ session, style, isTopPick, compact, onClick, onS
                 aria-label={`Make "${session.title}" your top pick`}
               >
                 <svg
-                  className="w-3 h-3 text-muted/50 hover:text-primary shrink-0 transition-colors"
+                  className="w-3 h-3 text-muted hover:text-primary shrink-0 transition-colors"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth={1.5}
@@ -81,7 +81,7 @@ export function TimelineBlock({ session, style, isTopPick, compact, onClick, onS
                 </svg>
               </button>
             )}
-            <h4 className="text-[12px] font-medium text-text/70 leading-snug group-hover:text-primary transition-colors duration-200 line-clamp-2">
+            <h4 className="text-[12px] font-medium text-text-secondary leading-snug group-hover:text-primary transition-colors duration-200 line-clamp-2">
               {session.title}
             </h4>
           </div>
@@ -90,7 +90,7 @@ export function TimelineBlock({ session, style, isTopPick, compact, onClick, onS
               className="w-1.5 h-1.5 rounded-full shrink-0"
               style={{ backgroundColor: trackColor }}
             />
-            <span className="text-[9px] text-muted/70 truncate">{session.track}</span>
+            <span className="text-micro text-muted truncate">{session.track}</span>
           </div>
         </div>
       )}

@@ -1,7 +1,7 @@
 export default function Loading() {
   return (
     <main className="h-screen flex flex-col overflow-hidden">
-      <div className="border-b border-white/5">
+      <div className="border-b border-b1">
         <div className="max-w-2xl mx-auto w-full px-4 md:px-8 py-6 flex items-center justify-between">
           <div>
             <div className="h-3 w-12 skeleton-pulse rounded mb-2" />
