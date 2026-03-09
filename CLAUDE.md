@@ -33,9 +33,9 @@ npm run dev
 ## Design System
 
 - Background: `#0A0A0A` | Primary: `#FF6B35` | Accent: `#00D4AA`
-- Text: `#F5F5F5` | Muted: `#6B7280`
+- Text: `#F5F5F5` | Muted: `#9CA3AF`
 - Headings: Space Grotesk (bold) | Body: Inter
-- Cards: glassmorphism (`bg-white/5 backdrop-blur-md border border-white/10`)
+- Surfaces: semantic tokens (`bg-s1`, `bg-s2`, `border-b1`, etc.) — see `docs/design-system.md`
 
 ## Environment Variables
 

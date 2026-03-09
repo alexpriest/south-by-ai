@@ -56,14 +56,14 @@ export function VibeSelect({ selected, onChange }: VibeSelectProps) {
               className={`text-left rounded-xl p-5 transition-all duration-200 ${
                 isSelected
                   ? 'bg-primary/15 border-2 border-primary shadow-[0_0_20px_rgba(255,107,53,0.15)] scale-[1.01]'
-                  : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20'
+                  : 'bg-s1 border border-b1 hover:bg-s2 hover:border-bh'
               }`}
             >
               <div className="flex items-start gap-3">
                 <kbd className={`inline-flex items-center justify-center w-6 h-6 rounded text-[11px] font-bold shrink-0 mt-0.5 transition-colors duration-200 ${
                   isSelected
                     ? 'bg-primary text-white'
-                    : 'bg-white/10 text-muted border border-white/10'
+                    : 'bg-s2 text-muted border border-b1'
                 }`}>
                   {KEYS[i]}
                 </kbd>

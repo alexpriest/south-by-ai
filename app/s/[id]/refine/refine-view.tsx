@@ -25,7 +25,7 @@ export function RefineView({ schedule }: RefineViewProps) {
   return (
     <main className="h-screen flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-b border-white/5">
+      <div className="border-b border-b1">
         <div className="max-w-2xl mx-auto w-full px-4 md:px-8 py-6 flex items-center justify-between">
           <div>
             <p className="text-xs text-accent uppercase tracking-wider mb-0.5">Refine</p>
@@ -33,7 +33,7 @@ export function RefineView({ schedule }: RefineViewProps) {
           </div>
           <Link
             href={`/s/${schedule.id}`}
-            className="bg-white/10 text-white rounded-full px-6 py-2.5 text-sm hover:bg-white/20 transition-colors"
+            className="bg-s2 text-white rounded-full px-6 py-2.5 text-sm hover:bg-sh transition-colors"
           >
             View Schedule
           </Link>

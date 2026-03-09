@@ -243,7 +243,7 @@ export function MapView({ day }: MapViewProps) {
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-200 ${
               timeFilter === f.value
                 ? 'bg-primary/20 text-primary'
-                : 'bg-white/5 text-muted hover:bg-white/10 hover:text-text'
+                : 'bg-s1 text-muted hover:bg-s2 hover:text-text'
             }`}
           >
             {f.label}
@@ -259,7 +259,7 @@ export function MapView({ day }: MapViewProps) {
         </div>
       ) : (
         /* Map + Sidebar layout */
-        <div className="flex flex-col lg:flex-row rounded-xl overflow-hidden border border-white/10">
+        <div className="flex flex-col lg:flex-row rounded-xl overflow-hidden border border-b1">
           {/* Map */}
           <div
             className="relative lg:flex-1 min-h-[300px] h-[50vh] lg:min-h-[500px] lg:h-auto"
@@ -271,7 +271,7 @@ export function MapView({ day }: MapViewProps) {
               style={{ width: '100%', height: '100%' }}
             />
             {/* Stop count badge */}
-            <div className="absolute top-3 left-3 z-[1000] bg-background/80 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5 text-xs text-muted">
+            <div className="absolute top-3 left-3 z-[1000] bg-background/80 backdrop-blur-md border border-b1 rounded-full px-3 py-1.5 text-xs text-muted">
               {stops.length} stop{stops.length !== 1 ? 's' : ''}
             </div>
             {/* Mobile: tap to interact overlay */}
@@ -280,7 +280,7 @@ export function MapView({ day }: MapViewProps) {
                 className="absolute inset-0 z-[1001] flex items-center justify-center lg:hidden"
                 onClick={() => setMapInteractive(true)}
               >
-                <span className="bg-background/80 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 text-sm text-muted">
+                <span className="bg-background/80 backdrop-blur-md border border-b1 rounded-full px-4 py-2 text-sm text-muted">
                   Tap to interact with map
                 </span>
               </div>
@@ -290,7 +290,7 @@ export function MapView({ day }: MapViewProps) {
           {/* Session sidebar */}
           <div
             ref={listRef}
-            className="lg:w-[340px] shrink-0 overflow-y-auto bg-white/[0.02] lg:border-l border-white/10 max-h-[50vh] lg:max-h-[calc(100vh-280px)]"
+            className="lg:w-[340px] shrink-0 overflow-y-auto bg-ss lg:border-l border-b1 max-h-[50vh] lg:max-h-[calc(100vh-280px)]"
           >
             <div className="p-3 space-y-1">
               {stops.map((stop) => (
@@ -300,14 +300,14 @@ export function MapView({ day }: MapViewProps) {
                   onClick={() => handleStopClick(stop.stopNumber)}
                   className={`group rounded-lg p-3 cursor-pointer transition-all duration-200 ${
                     activeStop === stop.stopNumber
-                      ? 'bg-white/[0.08] ring-1 ring-white/15'
-                      : 'hover:bg-white/[0.04]'
+                      ? 'bg-sh ring-1 ring-b2'
+                      : 'hover:bg-s1'
                   }`}
                 >
                   {/* Stop header */}
                   <div className="flex items-center gap-2.5 mb-2">
                     <div
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0 transition-transform duration-200 group-hover:scale-110"
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-caption font-bold text-white shrink-0 transition-transform duration-200 group-hover:scale-110"
                       style={{
                         background: stop.color,
                         boxShadow: activeStop === stop.stopNumber
@@ -318,7 +318,7 @@ export function MapView({ day }: MapViewProps) {
                       {stop.stopNumber}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[11px] text-muted/70 uppercase tracking-wider truncate">
+                      <p className="text-caption text-muted uppercase tracking-wider truncate">
                         {stop.venueName}
                       </p>
                     </div>
@@ -332,7 +332,7 @@ export function MapView({ day }: MapViewProps) {
                         <div key={session.id} className="flex items-start gap-2">
                           <div className="min-w-0 flex-1">
                             <p className={`text-sm leading-snug ${
-                              activeStop === stop.stopNumber ? 'text-text' : 'text-text/80'
+                              activeStop === stop.stopNumber ? 'text-text' : 'text-text-secondary'
                             }`}>
                               {session.priority === 1 && (
                                 <span className="text-primary mr-1">&#9733;</span>
@@ -340,11 +340,11 @@ export function MapView({ day }: MapViewProps) {
                               {session.title}
                             </p>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-[11px] text-muted">
+                              <span className="text-caption text-muted">
                                 {session.startTime} – {session.endTime}
                               </span>
                               <span
-                                className="text-[10px] font-medium px-1.5 py-0 rounded-full"
+                                className="text-micro font-medium px-1.5 py-0 rounded-full"
                                 style={{
                                   color: trackColor,
                                   background: `${trackColor}15`,

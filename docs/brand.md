@@ -1,5 +1,7 @@
 # South by AI -- Brand Guide
 
+> **Note:** The canonical design system reference is [`docs/design-system.md`](./design-system.md). This file is kept for historical context.
+
 ## Color System
 
 | Token       | Value                      | Usage                                    |

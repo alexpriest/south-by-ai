@@ -39,7 +39,7 @@ export default function RootLayout({
       <body className={`${inter.className} bg-background text-text min-h-screen flex flex-col`}>
         <ThemeToggle />
         <div className="flex-1">{children}</div>
-        <footer className="text-center py-4 text-[10px] text-muted/50 mt-auto space-y-1">
+        <footer className="text-center py-4 text-micro text-muted mt-auto space-y-1">
           <p>Session details may change — always check sxsw.com for the latest.</p>
           {process.env.NEXT_PUBLIC_BUILD_SHA && <p>{process.env.NEXT_PUBLIC_BUILD_SHA}</p>}
         </footer>
