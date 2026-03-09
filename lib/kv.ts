@@ -7,6 +7,15 @@ export function generateId(): string {
   return nanoid(10)
 }
 
+export function generateEditSecret(): string {
+  return nanoid(21)
+}
+
+export function validateEditSecret(schedule: StoredSchedule, secret: string): boolean {
+  if (!schedule.editSecret || !secret) return false
+  return schedule.editSecret === secret
+}
+
 export async function saveSchedule(schedule: StoredSchedule): Promise<void> {
   await kv.set(`schedule:${schedule.id}`, schedule, { ex: 60 * 60 * 24 * 30 })
 }

@@ -10,9 +10,9 @@ export default function ScheduleError({
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="text-center max-w-md">
-        <h2 className="font-heading text-2xl font-bold mb-4">Something went wrong</h2>
+        <h2 className="font-heading text-2xl font-bold mb-4">That broke.</h2>
         <p className="text-muted mb-6">
-          We hit a snag loading this schedule. It might be a temporary issue.
+          Something went sideways loading this schedule. Give it another shot — these things usually sort themselves out.
         </p>
         <button
           onClick={reset}

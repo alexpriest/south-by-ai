@@ -43,6 +43,7 @@ export interface StoredSchedule {
   days: DaySchedule[]
   chatHistory: ChatMessage[]
   createdAt: string
+  editSecret?: string
 }
 
 export interface ChatMessage {

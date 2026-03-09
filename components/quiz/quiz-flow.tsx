@@ -106,7 +106,10 @@ export function QuizFlow() {
         throw new Error(data.error || 'Something broke building your schedule. Hit try again — AI has its off moments.')
       }
 
-      const { id } = await res.json()
+      const { id, editSecret } = await res.json()
+      if (editSecret) {
+        localStorage.setItem(`editSecret:${id}`, editSecret)
+      }
       router.push(`/s/${id}`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'That didn\'t work. Give it another shot.')

@@ -10,5 +10,6 @@ export default async function RefinePage({ params }: { params: Promise<{ id: str
     notFound()
   }
 
-  return <RefineView schedule={schedule} />
+  const { editSecret: _secret, ...safeSchedule } = schedule
+  return <RefineView schedule={safeSchedule} />
 }
