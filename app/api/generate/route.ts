@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { QuizState } from '@/lib/types'
 import { getSessions } from '@/lib/sessions'
 import { generateSchedule } from '@/lib/claude'
-import { generateId, generateEditSecret, saveSchedule } from '@/lib/kv'
+import { generateId, saveSchedule } from '@/lib/kv'
 import { checkGenerateLimit } from '@/lib/rate-limit'
 
 export const maxDuration = 60
@@ -18,6 +18,19 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json() as QuizState
+
+    if (typeof body.name !== 'string' || !Array.isArray(body.interests) || !Array.isArray(body.days) || !Array.isArray(body.vibes)) {
+      return NextResponse.json(
+        { error: 'Invalid request data.' },
+        { status: 400 }
+      )
+    }
+    if (typeof body.freeText !== 'undefined' && typeof body.freeText !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid request data.' },
+        { status: 400 }
+      )
+    }
 
     if (!body.name?.trim() || !body.badge || !body.interests?.length || !body.vibes?.length || !body.days?.length) {
       return NextResponse.json(
@@ -52,22 +65,21 @@ export async function POST(request: Request) {
       days = await generateSchedule(body, sessions)
     } catch (first) {
       console.warn('First generate attempt failed, retrying:', first instanceof Error ? first.message : first)
+      await new Promise(r => setTimeout(r, 1000))
       days = await generateSchedule(body, sessions)
     }
     const id = generateId()
-    const editSecret = generateEditSecret()
 
-    await saveSchedule({
+    const { editToken } = await saveSchedule({
       id,
       name: body.name.trim(),
       preferences: body,
       days,
       chatHistory: [],
       createdAt: new Date().toISOString(),
-      editSecret,
     })
 
-    return NextResponse.json({ id, editSecret })
+    return NextResponse.json({ id, editToken })
   } catch (e) {
     const err = e instanceof Error ? e.message : String(e)
     console.error('Generate error:', err, e)

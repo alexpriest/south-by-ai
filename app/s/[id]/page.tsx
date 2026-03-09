@@ -39,6 +39,6 @@ export default async function SchedulePage({ params }: { params: Promise<{ id: s
     notFound()
   }
 
-  const { editSecret: _secret, ...safeSchedule } = schedule
+  const { editToken, ...safeSchedule } = schedule
   return <ScheduleView schedule={safeSchedule} />
 }

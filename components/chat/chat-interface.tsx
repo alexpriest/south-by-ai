@@ -45,11 +45,10 @@ export function ChatInterface({ scheduleId, initialMessages, onScheduleUpdate }:
     setSending(true)
 
     try {
-      const editSecret = localStorage.getItem(`editSecret:${scheduleId}`) || ''
       const res = await fetch('/api/refine', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scheduleId, message: text.trim(), editSecret }),
+        body: JSON.stringify({ scheduleId, message: text.trim(), editToken: localStorage.getItem(`editToken:${scheduleId}`) }),
       })
 
       if (!res.ok) throw new Error('Failed to refine')

@@ -12,8 +12,8 @@ export async function GET(
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  const { editSecret: _secret, ...safeSchedule } = schedule
-  return NextResponse.json(safeSchedule, {
+  const { editToken: _, ...publicSchedule } = schedule
+  return NextResponse.json(publicSchedule, {
     headers: {
       'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
     },

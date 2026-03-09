@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSessions } from '@/lib/sessions'
 import { refineSchedule } from '@/lib/claude'
-import { getSchedule, saveSchedule, validateEditSecret } from '@/lib/kv'
+import { getSchedule, saveSchedule } from '@/lib/kv'
 import { checkRefineLimit } from '@/lib/rate-limit'
 
 export const maxDuration = 60
@@ -16,7 +16,14 @@ export async function POST(request: Request) {
       )
     }
 
-    const { scheduleId, message, editSecret } = await request.json()
+    const { scheduleId, message, editToken } = await request.json()
+
+    if (typeof scheduleId !== 'string' || typeof message !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid request data.' },
+        { status: 400 }
+      )
+    }
 
     if (!scheduleId || !message?.trim()) {
       return NextResponse.json(
@@ -35,7 +42,7 @@ export async function POST(request: Request) {
       )
     }
 
-    if (!editSecret || !validateEditSecret(schedule, editSecret)) {
+    if (!editToken || editToken !== schedule.editToken) {
       return NextResponse.json(
         { error: 'You don\'t have permission to edit this schedule.' },
         { status: 403 }
@@ -43,7 +50,14 @@ export async function POST(request: Request) {
     }
 
     const sessions = await getSessions()
-    const { days, reply } = await refineSchedule(schedule, trimmedMessage, sessions)
+    let days, reply
+    try {
+      ({ days, reply } = await refineSchedule(schedule, trimmedMessage, sessions))
+    } catch (first) {
+      console.warn('First refine attempt failed, retrying:', first instanceof Error ? first.message : first)
+      await new Promise((r) => setTimeout(r, 1000))
+      ;({ days, reply } = await refineSchedule(schedule, trimmedMessage, sessions))
+    }
 
     schedule.days = days
     schedule.chatHistory.push(
@@ -57,9 +71,8 @@ export async function POST(request: Request) {
 
     await saveSchedule(schedule)
 
-    // TODO: Stream Claude responses for better chat UX
-    // Only return the reply — the client calls router.refresh() to get updated schedule data
-    return NextResponse.json({ reply })
+    const { editToken: _, ...publicSchedule } = schedule
+    return NextResponse.json({ schedule: publicSchedule, reply })
   } catch (e) {
     console.error('Refine error:', e)
     return NextResponse.json(

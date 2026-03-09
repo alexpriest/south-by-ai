@@ -20,16 +20,16 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
   const activeDay = currentSchedule.days[activeDayIndex]
 
   useEffect(() => {
-    const secret = localStorage.getItem(`editSecret:${schedule.id}`)
-    setIsOwner(!!secret)
+    const token = localStorage.getItem(`editToken:${schedule.id}`)
+    setIsOwner(!!token)
   }, [schedule.id])
 
   const handleSwap = async (dayDate: string, sessionId: string) => {
-    const editSecret = localStorage.getItem(`editSecret:${currentSchedule.id}`) || ''
+    const editToken = localStorage.getItem(`editToken:${currentSchedule.id}`)
     const res = await fetch(`/api/schedule/${currentSchedule.id}/swap`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dayDate, sessionId, editSecret }),
+      body: JSON.stringify({ dayDate, sessionId, editToken }),
     })
     if (res.ok) {
       const { schedule: updated } = await res.json()
