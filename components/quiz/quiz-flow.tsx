@@ -84,7 +84,11 @@ export function QuizFlow() {
     }
   }
 
+  const submittingRef = useRef(false)
+
   const submit = async () => {
+    if (submittingRef.current) return
+    submittingRef.current = true
     setLoading(true)
     setError(null)
 
@@ -106,13 +110,17 @@ export function QuizFlow() {
         throw new Error(data.error || 'Something broke building your schedule. Hit try again — AI has its off moments.')
       }
 
-      const { id } = await res.json()
+      const { id, editToken } = await res.json()
+      if (editToken) {
+        localStorage.setItem(`editToken:${id}`, editToken)
+      }
       router.push(`/s/${id}`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'That didn\'t work. Give it another shot.')
     } finally {
       clearInterval(interval)
       setLoading(false)
+      submittingRef.current = false
     }
   }
 

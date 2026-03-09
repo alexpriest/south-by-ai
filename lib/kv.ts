@@ -7,8 +7,12 @@ export function generateId(): string {
   return nanoid(10)
 }
 
-export async function saveSchedule(schedule: StoredSchedule): Promise<void> {
+export async function saveSchedule(schedule: StoredSchedule): Promise<{ editToken: string }> {
+  if (!schedule.editToken) {
+    schedule.editToken = nanoid(24)
+  }
   await kv.set(`schedule:${schedule.id}`, schedule, { ex: 60 * 60 * 24 * 30 })
+  return { editToken: schedule.editToken }
 }
 
 export async function getSchedule(id: string): Promise<StoredSchedule | null> {

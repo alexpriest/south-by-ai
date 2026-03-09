@@ -75,6 +75,7 @@ function transformSession(hit: SXSWHit): Session {
 async function fetchSXSWEvents(): Promise<Session[]> {
   const pageRes = await fetch('https://schedule.sxsw.com/2026/search/event', {
     headers: { 'User-Agent': 'SouthByAI/1.0' },
+    signal: AbortSignal.timeout(5000),
   })
 
   const cookies = pageRes.headers.getSetCookie?.() || []
@@ -102,6 +103,7 @@ async function fetchSXSWEvents(): Promise<Session[]> {
       filters: [],
       models: ['event'],
     }),
+    signal: AbortSignal.timeout(5000),
   })
 
   if (!searchRes.ok) {

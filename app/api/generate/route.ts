@@ -19,6 +19,19 @@ export async function POST(request: Request) {
 
     const body = await request.json() as QuizState
 
+    if (typeof body.name !== 'string' || !Array.isArray(body.interests) || !Array.isArray(body.days) || !Array.isArray(body.vibes)) {
+      return NextResponse.json(
+        { error: 'Invalid request data.' },
+        { status: 400 }
+      )
+    }
+    if (typeof body.freeText !== 'undefined' && typeof body.freeText !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid request data.' },
+        { status: 400 }
+      )
+    }
+
     if (!body.name?.trim() || !body.badge || !body.interests?.length || !body.vibes?.length || !body.days?.length) {
       return NextResponse.json(
         { error: 'Looks like some answers are missing. Head back and make sure you\'ve filled everything in.' },
@@ -38,11 +51,12 @@ export async function POST(request: Request) {
       days = await generateSchedule(body, sessions)
     } catch (first) {
       console.warn('First generate attempt failed, retrying:', first instanceof Error ? first.message : first)
+      await new Promise(r => setTimeout(r, 1000))
       days = await generateSchedule(body, sessions)
     }
     const id = generateId()
 
-    await saveSchedule({
+    const { editToken } = await saveSchedule({
       id,
       name: body.name.trim(),
       preferences: body,
@@ -51,7 +65,7 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     })
 
-    return NextResponse.json({ id })
+    return NextResponse.json({ id, editToken })
   } catch (e) {
     const err = e instanceof Error ? e.message : String(e)
     console.error('Generate error:', err, e)

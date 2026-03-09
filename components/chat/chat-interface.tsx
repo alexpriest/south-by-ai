@@ -14,11 +14,12 @@ const SUGGESTIONS = [
 
 interface ChatInterfaceProps {
   scheduleId: string
+  editToken: string | null
   initialMessages: ChatMessage[]
   onScheduleUpdate: () => void
 }
 
-export function ChatInterface({ scheduleId, initialMessages, onScheduleUpdate }: ChatInterfaceProps) {
+export function ChatInterface({ scheduleId, editToken, initialMessages, onScheduleUpdate }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -48,7 +49,7 @@ export function ChatInterface({ scheduleId, initialMessages, onScheduleUpdate }:
       const res = await fetch('/api/refine', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scheduleId, message: text.trim() }),
+        body: JSON.stringify({ scheduleId, message: text.trim(), editToken }),
       })
 
       if (!res.ok) throw new Error('Failed to refine')

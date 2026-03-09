@@ -9,5 +9,6 @@ export default async function RefinePage({ params }: { params: { id: string } })
     notFound()
   }
 
-  return <RefineView schedule={schedule} />
+  const { editToken, ...safeSchedule } = schedule
+  return <RefineView schedule={safeSchedule} />
 }

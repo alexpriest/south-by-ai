@@ -22,3 +22,14 @@ export async function checkRefineLimit(ip: string): Promise<boolean> {
   const { success } = await refineLimiter.limit(ip)
   return success
 }
+
+const swapLimiter = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(50, '1 h'),
+  prefix: 'ratelimit:swap',
+})
+
+export async function checkSwapLimit(ip: string): Promise<boolean> {
+  const { success } = await swapLimiter.limit(ip)
+  return success
+}
