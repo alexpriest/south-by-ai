@@ -56,13 +56,13 @@ export function DayPicker({ selected, onChange }: DayPickerProps) {
               className={`rounded-full px-4 py-2.5 text-sm transition-all duration-200 ${
                 isSelected
                   ? 'bg-primary/20 border border-primary text-primary shadow-[0_0_12px_rgba(255,107,53,0.15)]'
-                  : 'bg-white/5 border border-white/10 text-text hover:bg-white/10 hover:border-white/20'
+                  : 'bg-s1 border border-b1 text-text hover:bg-s2 hover:border-bh'
               }`}
             >
               <kbd className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold mr-2 transition-colors duration-200 ${
                 isSelected
                   ? 'bg-primary text-white'
-                  : 'bg-white/10 text-muted border border-white/10'
+                  : 'bg-s2 text-muted border border-b1'
               }`}>
                 {i + 1}
               </kbd>

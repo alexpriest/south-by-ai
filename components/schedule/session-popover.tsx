@@ -63,7 +63,7 @@ export function SessionPopover({ session, anchorRect, onClose }: SessionPopoverP
       tabIndex={-1}
       role="dialog"
       aria-label={session.title}
-      className="popover-enter bg-white dark:bg-[#1a1a1a] border border-black/10 dark:border-white/15 rounded-xl shadow-xl overflow-y-auto p-5"
+      className="popover-enter bg-background border border-b1 rounded-xl shadow-xl overflow-y-auto p-5"
     >
       <p className="text-xs text-muted">
         {session.startTime} &ndash; {session.endTime}
@@ -76,7 +76,7 @@ export function SessionPopover({ session, anchorRect, onClose }: SessionPopoverP
 
       {session.track && (
         <span
-          className="inline-block text-[11px] font-medium px-2 py-0.5 rounded-full mt-2"
+          className="inline-block text-caption font-medium px-2 py-0.5 rounded-full mt-2"
           style={{
             color: trackColor,
             backgroundColor: `${trackColor}20`,
@@ -92,7 +92,7 @@ export function SessionPopover({ session, anchorRect, onClose }: SessionPopoverP
 
       {session.speakers.length > 0 && (
         <div className="mt-3">
-          <p className="text-[11px] text-muted uppercase tracking-wider mb-1">Speakers</p>
+          <p className="text-caption text-muted uppercase tracking-wider mb-1">Speakers</p>
           <div className="flex flex-wrap gap-1.5">
             {session.speakers.map((speaker) => (
               <a
@@ -100,7 +100,7 @@ export function SessionPopover({ session, anchorRect, onClose }: SessionPopoverP
                 href={getSpeakerUrl(speaker)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-accent/80 hover:underline"
+                className="text-xs text-accent-readable hover:underline"
               >
                 {speaker}
               </a>
@@ -110,7 +110,7 @@ export function SessionPopover({ session, anchorRect, onClose }: SessionPopoverP
       )}
 
       {session.reason && (
-        <p className="text-xs text-accent/80 mt-3 italic border-t border-white/10 pt-3">
+        <p className="text-xs text-accent-readable mt-3 italic border-t border-b1 pt-3">
           {session.reason}
         </p>
       )}

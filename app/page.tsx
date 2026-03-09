@@ -20,7 +20,7 @@ export default function Home() {
             <br className="hidden md:block" />
             {' '}No more 47 open tabs.
           </p>
-          <p className="text-sm text-muted/70 max-w-lg mx-auto mb-4">
+          <p className="text-sm text-muted max-w-lg mx-auto mb-4">
             3,700+ sessions. You&apos;re not reading all those descriptions. Take a 60-second quiz and get a SXSW schedule you&apos;ll actually follow.
           </p>
           <a
@@ -39,16 +39,16 @@ export default function Home() {
         <QuizFlow />
       </section>
 
-      <footer className="border-t border-white/5 py-8 text-center text-xs text-muted/80">
+      <footer className="border-t border-b1 py-8 text-center text-xs text-muted">
         <p>
           Built by{' '}
-          <a href="https://alexpriest.com" target="_blank" rel="noopener noreferrer" className="text-muted/80 hover:text-accent transition-colors underline underline-offset-2">
+          <a href="https://alexpriest.com" target="_blank" rel="noopener noreferrer" className="text-muted hover:text-accent transition-colors underline underline-offset-2">
             Alex Priest
           </a>
           {' '}with Claude.
         </p>
         <p className="mt-2">
-          <a href="https://buymeacoffee.com/alexpriest" target="_blank" rel="noopener noreferrer" className="text-muted/80 hover:text-accent transition-colors underline underline-offset-2">
+          <a href="https://buymeacoffee.com/alexpriest" target="_blank" rel="noopener noreferrer" className="text-muted hover:text-accent transition-colors underline underline-offset-2">
             Buy me a coffee ☕
           </a>
         </p>

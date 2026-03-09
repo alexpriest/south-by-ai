@@ -46,7 +46,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
   return (
     <main className="min-h-screen">
       {/* Header */}
-      <div className="border-b border-white/5">
+      <div className="border-b border-b1">
         <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -58,7 +58,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
               </div>
               <div className="hidden sm:flex items-center gap-3 flex-wrap">
                 {/* View toggle — desktop */}
-                <div role="group" aria-label="View mode" className="flex rounded-full bg-white/5 border border-white/10 p-1">
+                <div role="group" aria-label="View mode" className="flex rounded-full bg-s1 border border-b1 p-1">
                   <button
                     onClick={() => setViewMode('timeline')}
                     aria-pressed={viewMode === 'timeline'}
@@ -106,7 +106,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                 <a
                   href={`/api/calendar/${currentSchedule.id}`}
                   download="sxsw-schedule.ics"
-                  className="group flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm text-muted border border-white/10 hover:border-white/20 hover:text-text transition-all duration-200"
+                  className="group flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm text-muted border border-b1 hover:border-bh hover:text-text transition-all duration-200"
                   title="Download schedule as calendar file"
                 >
                   <svg aria-hidden="true" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -125,7 +125,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                 )}
                 <Link
                   href="/"
-                  className="group flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm text-muted border border-white/10 hover:border-white/20 hover:text-text transition-all duration-200"
+                  className="group flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm text-muted border border-b1 hover:border-bh hover:text-text transition-all duration-200"
                   title="Start over with a new quiz"
                 >
                   <svg aria-hidden="true" className="w-3.5 h-3.5 group-hover:-rotate-180 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -138,7 +138,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
             {/* Mobile controls */}
             <div className="flex flex-col gap-3 sm:hidden">
               {/* View toggle — full width on mobile */}
-              <div role="group" aria-label="View mode" className="flex rounded-full bg-white/5 border border-white/10 p-1">
+              <div role="group" aria-label="View mode" className="flex rounded-full bg-s1 border border-b1 p-1">
                 <button
                   onClick={() => setViewMode('timeline')}
                   aria-pressed={viewMode === 'timeline'}
@@ -186,7 +186,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                 <a
                   href={`/api/calendar/${currentSchedule.id}`}
                   download="sxsw-schedule.ics"
-                  className="group flex items-center justify-center rounded-full w-10 h-10 text-muted border border-white/10 hover:border-white/20 hover:text-text transition-all duration-200"
+                  className="group flex items-center justify-center rounded-full w-10 h-10 text-muted border border-b1 hover:border-bh hover:text-text transition-all duration-200"
                   title="Export to Calendar"
                 >
                   <svg aria-hidden="true" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -196,7 +196,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                 <ShareButton scheduleId={currentSchedule.id} scheduleName={currentSchedule.name} />
                 <Link
                   href="/"
-                  className="group flex items-center justify-center rounded-full w-10 h-10 text-muted border border-white/10 hover:border-white/20 hover:text-text transition-all duration-200"
+                  className="group flex items-center justify-center rounded-full w-10 h-10 text-muted border border-b1 hover:border-bh hover:text-text transition-all duration-200"
                   title="Start over with a new quiz"
                 >
                   <svg aria-hidden="true" className="w-4 h-4 group-hover:-rotate-180 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -210,11 +210,11 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
       </div>
 
       {/* Preferences breadcrumbs */}
-      <div className="border-b border-white/5">
+      <div className="border-b border-b1">
         <div className="max-w-4xl mx-auto px-4 md:px-8 py-3 flex flex-wrap gap-2 items-center text-xs">
-          <span className="text-muted/80 shrink-0">Built around:</span>
+          <span className="text-muted shrink-0">Built around:</span>
           {currentSchedule.preferences.interests.map((interest) => (
-            <span key={interest} className="bg-white/5 text-muted px-2.5 py-1 rounded-full">
+            <span key={interest} className="bg-s1 text-muted px-2.5 py-1 rounded-full">
               {interest}
             </span>
           ))}
@@ -223,7 +223,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
               {vibe}
             </span>
           ))}
-          <span className="bg-accent/10 text-accent/80 px-2.5 py-1 rounded-full">
+          <span className="bg-accent/10 text-accent-readable px-2.5 py-1 rounded-full">
             {currentSchedule.preferences.badge}
           </span>
         </div>
@@ -252,10 +252,11 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                   role="tab"
                   onClick={() => setActiveDayIndex(i)}
                   aria-selected={i === activeDayIndex}
+                  aria-controls="day-panel"
                   className={`rounded-full px-4 py-2.5 text-sm whitespace-nowrap transition-all duration-200 ${
                     i === activeDayIndex
                       ? 'bg-primary text-white shadow-[0_0_16px_rgba(255,107,53,0.2)]'
-                      : 'bg-white/5 text-muted hover:bg-white/10 hover:text-text'
+                      : 'bg-s1 text-muted hover:bg-s2 hover:text-text'
                   }`}
                 >
                   {label}
@@ -264,11 +265,14 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
             </nav>
 
             {activeDay && (
-              viewMode === 'timeline'
-                ? <TimelineView day={activeDay} onSwap={isOwner ? (sessionId) => handleSwap(activeDay.date, sessionId) : undefined} />
-                : viewMode === 'map'
-                ? <MapView day={activeDay} />
-                : <DayView day={activeDay} onSwap={isOwner ? (sessionId) => handleSwap(activeDay.date, sessionId) : undefined} />
+              <div role="tabpanel" id="day-panel" aria-labelledby={`day-tab-${activeDayIndex}`}>
+                {viewMode === 'timeline'
+                  ? <TimelineView day={activeDay} onSwap={isOwner ? (sessionId) => handleSwap(activeDay.date, sessionId) : undefined} />
+                  : viewMode === 'map'
+                  ? <MapView day={activeDay} />
+                  : <DayView day={activeDay} onSwap={isOwner ? (sessionId) => handleSwap(activeDay.date, sessionId) : undefined} />
+                }
+              </div>
             )}
           </>
         )}

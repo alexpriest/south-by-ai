@@ -4,7 +4,7 @@ import { checkSwapLimit } from '@/lib/rate-limit'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1'
   if (!(await checkSwapLimit(ip))) {
@@ -14,7 +14,7 @@ export async function POST(
     )
   }
 
-  const { id } = params
+  const { id } = await params
   const { dayDate, sessionId, editSecret } = await request.json()
 
   if (!dayDate || !sessionId) {

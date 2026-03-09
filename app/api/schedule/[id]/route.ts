@@ -3,9 +3,10 @@ import { getSchedule } from '@/lib/kv'
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const schedule = await getSchedule(params.id)
+  const { id } = await params
+  const schedule = await getSchedule(id)
 
   if (!schedule) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
