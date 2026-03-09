@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { DayView } from '@/components/schedule/day-view'
 import { TimelineView } from '@/components/schedule/timeline-view'
@@ -16,13 +16,20 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
   const [currentSchedule, setCurrentSchedule] = useState(schedule)
   const [activeDayIndex, setActiveDayIndex] = useState(0)
   const [viewMode, setViewMode] = useState<'timeline' | 'list' | 'map'>('timeline')
+  const [isOwner, setIsOwner] = useState(false)
   const activeDay = currentSchedule.days[activeDayIndex]
 
+  useEffect(() => {
+    const secret = localStorage.getItem(`editSecret:${schedule.id}`)
+    setIsOwner(!!secret)
+  }, [schedule.id])
+
   const handleSwap = async (dayDate: string, sessionId: string) => {
+    const editSecret = localStorage.getItem(`editSecret:${currentSchedule.id}`) || ''
     const res = await fetch(`/api/schedule/${currentSchedule.id}/swap`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dayDate, sessionId }),
+      body: JSON.stringify({ dayDate, sessionId, editSecret }),
     })
     if (res.ok) {
       const { schedule: updated } = await res.json()
@@ -108,12 +115,14 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                   Export to Calendar
                 </a>
                 <ShareButton scheduleId={currentSchedule.id} scheduleName={currentSchedule.name} />
-                <Link
-                  href={`/s/${currentSchedule.id}/refine`}
-                  className="bg-primary text-white rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-primary/90 transition-colors"
-                >
-                  Refine with AI
-                </Link>
+                {isOwner && (
+                  <Link
+                    href={`/s/${currentSchedule.id}/refine`}
+                    className="bg-primary text-white rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-primary/90 transition-colors"
+                  >
+                    Refine with AI
+                  </Link>
+                )}
                 <Link
                   href="/"
                   className="group flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm text-muted border border-white/10 hover:border-white/20 hover:text-text transition-all duration-200"
@@ -166,12 +175,14 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
               </div>
               {/* Action buttons — row on mobile */}
               <div className="flex items-center gap-2">
-                <Link
-                  href={`/s/${currentSchedule.id}/refine`}
-                  className="flex-1 bg-primary text-white rounded-full px-4 py-2.5 text-sm font-semibold hover:bg-primary/90 transition-colors text-center"
-                >
-                  Refine with AI
-                </Link>
+                {isOwner && (
+                  <Link
+                    href={`/s/${currentSchedule.id}/refine`}
+                    className="flex-1 bg-primary text-white rounded-full px-4 py-2.5 text-sm font-semibold hover:bg-primary/90 transition-colors text-center"
+                  >
+                    Refine with AI
+                  </Link>
+                )}
                 <a
                   href={`/api/calendar/${currentSchedule.id}`}
                   download="sxsw-schedule.ics"
@@ -254,10 +265,10 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
 
             {activeDay && (
               viewMode === 'timeline'
-                ? <TimelineView day={activeDay} onSwap={(sessionId) => handleSwap(activeDay.date, sessionId)} />
+                ? <TimelineView day={activeDay} onSwap={isOwner ? (sessionId) => handleSwap(activeDay.date, sessionId) : undefined} />
                 : viewMode === 'map'
                 ? <MapView day={activeDay} />
-                : <DayView day={activeDay} onSwap={(sessionId) => handleSwap(activeDay.date, sessionId)} />
+                : <DayView day={activeDay} onSwap={isOwner ? (sessionId) => handleSwap(activeDay.date, sessionId) : undefined} />
             )}
           </>
         )}

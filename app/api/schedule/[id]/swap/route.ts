@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSchedule, saveSchedule } from '@/lib/kv'
+import { getSchedule, saveSchedule, validateEditSecret } from '@/lib/kv'
+import { checkSwapLimit } from '@/lib/rate-limit'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1'
+  if (!(await checkSwapLimit(ip))) {
+    return NextResponse.json(
+      { error: 'Too many swap requests. Try again in a few minutes.' },
+      { status: 429 }
+    )
+  }
+
   const { id } = params
-  const { dayDate, sessionId } = await request.json()
+  const { dayDate, sessionId, editSecret } = await request.json()
 
   if (!dayDate || !sessionId) {
     return NextResponse.json({ error: 'Missing dayDate or sessionId' }, { status: 400 })
@@ -15,6 +24,13 @@ export async function POST(
   const schedule = await getSchedule(id)
   if (!schedule) {
     return NextResponse.json({ error: 'Schedule not found' }, { status: 404 })
+  }
+
+  if (!editSecret || !validateEditSecret(schedule, editSecret)) {
+    return NextResponse.json(
+      { error: 'You don\'t have permission to edit this schedule.' },
+      { status: 403 }
+    )
   }
 
   const day = schedule.days.find((d) => d.date === dayDate)
@@ -45,5 +61,6 @@ export async function POST(
 
   await saveSchedule(schedule)
 
-  return NextResponse.json({ schedule })
+  const { editSecret: _secret, ...safeSchedule } = schedule
+  return NextResponse.json({ schedule: safeSchedule })
 }
