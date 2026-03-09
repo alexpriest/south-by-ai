@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChatInterface } from '@/components/chat/chat-interface'
@@ -12,11 +11,6 @@ interface RefineViewProps {
 
 export function RefineView({ schedule }: RefineViewProps) {
   const router = useRouter()
-  const [editToken, setEditToken] = useState<string | null>(null)
-
-  useEffect(() => {
-    setEditToken(localStorage.getItem(`editToken:${schedule.id}`))
-  }, [schedule.id])
 
   const greeting: ChatMessage = {
     role: 'assistant',
@@ -51,7 +45,6 @@ export function RefineView({ schedule }: RefineViewProps) {
         <div className="max-w-2xl mx-auto w-full flex flex-col flex-1 min-h-0">
           <ChatInterface
             scheduleId={schedule.id}
-            editToken={editToken}
             initialMessages={initialMessages}
             onScheduleUpdate={() => router.refresh()}
           />

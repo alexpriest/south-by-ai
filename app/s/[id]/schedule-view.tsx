@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { DayView } from '@/components/schedule/day-view'
 import { TimelineView } from '@/components/schedule/timeline-view'
@@ -16,14 +16,10 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
   const [currentSchedule, setCurrentSchedule] = useState(schedule)
   const [activeDayIndex, setActiveDayIndex] = useState(0)
   const [viewMode, setViewMode] = useState<'timeline' | 'list' | 'map'>('timeline')
-  const [editToken, setEditToken] = useState<string | null>(null)
   const activeDay = currentSchedule.days[activeDayIndex]
 
-  useEffect(() => {
-    setEditToken(localStorage.getItem(`editToken:${schedule.id}`))
-  }, [schedule.id])
-
   const handleSwap = async (dayDate: string, sessionId: string) => {
+    const editToken = localStorage.getItem(`editToken:${currentSchedule.id}`)
     const res = await fetch(`/api/schedule/${currentSchedule.id}/swap`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
