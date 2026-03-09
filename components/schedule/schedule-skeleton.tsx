@@ -2,7 +2,7 @@ export function ScheduleSkeleton() {
   return (
     <main className="min-h-screen">
       {/* Header skeleton */}
-      <div className="border-b border-white/5">
+      <div className="border-b border-b1">
         <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -29,7 +29,7 @@ export function ScheduleSkeleton() {
         {/* Session cards */}
         <div className="flex flex-col gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-xl p-5 border border-white/5">
+            <div key={i} className="rounded-xl p-5 border border-b1">
               <div className="h-5 w-3/4 skeleton-pulse rounded mb-3" />
               <div className="h-4 w-full skeleton-pulse rounded mb-2" />
               <div className="h-4 w-2/3 skeleton-pulse rounded mb-3" />

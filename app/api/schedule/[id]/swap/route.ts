@@ -4,9 +4,9 @@ import { checkSwapLimit } from '@/lib/rate-limit'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for') || 'unknown'
+  const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1'
   if (!(await checkSwapLimit(ip))) {
     return NextResponse.json(
       { error: 'Too many swaps — slow down and try again in a few minutes.' },
@@ -14,7 +14,7 @@ export async function POST(
     )
   }
 
-  const { id } = params
+  const { id } = await params
   const { dayDate, sessionId, editToken } = await request.json()
 
   if (typeof dayDate !== 'string' || typeof sessionId !== 'string' || !dayDate || !sessionId) {

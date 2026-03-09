@@ -10,9 +10,11 @@
 
 **Subheadline:** Tell us what you're into. AI builds your schedule. No more 47 open tabs.
 
-**CTA button:** Build My Schedule
+**Value prop:** 3,700+ sessions. You're not reading all those descriptions. Take a 60-second quiz and get a SXSW schedule you'll actually follow.
 
-**Value prop:** 850+ sessions. You're not reading all those descriptions. Take a 60-second quiz and get a SXSW schedule you'll actually follow.
+**Browse link:** Or browse all sessions on sxsw.com.
+
+> Note: No separate CTA button — the quiz is embedded directly below the hero on the landing page.
 
 ---
 
@@ -24,36 +26,45 @@
 
 **Placeholder:** First name works
 
+### Badge Picker
+
+**Title:** What badge do you have?
+
+**Subtitle:** This helps us only show sessions you can actually get into.
+
+**Badge options:**
+- Platinum Badge — Full access to Interactive, Music, and Film & TV
+- Innovation Badge — Interactive tracks, tech, design, and startups
+- Music Badge — Music showcases, industry sessions, and festivals
+- Film & TV Badge — Screenings, premieres, and film industry panels
+
 ### Step 1: Interests
 
 **Title:** What gets you out of bed at SXSW?
 
 **Subtitle:** Pick as many as you want.
 
-**Interest chips:**
-- AI
-- Design
-- Film
-- Music
-- Gaming
-- Health
-- Climate
-- Startups
-- Food
-- Sports
-- Creator Economy
-- Web3
-- XR
-- Government
-- Space
-- Future of Work
-- Enterprise
+**Interest chips (14 grouped categories):**
+- Tech & AI — Artificial intelligence, emerging tech, software
+- Design — Product design, UX, creative tools
+- Culture — Art, social issues, storytelling
+- Health — Wellness, medtech, mental health
+- Creator Economy — Influencers, platforms, monetization
+- Brand & Marketing — Advertising, brand strategy, growth
+- Cities & Climate — Urban planning, sustainability, climate tech
+- Startups — Founders, venture capital, pitch competitions
+- Sports & Gaming — Esports, sports tech, gaming culture
+- Music — Live music, music industry, artist showcases
+- Film & TV — Screenings, TV premieres, documentary
+- Workplace — Future of work, HR tech, remote culture
+- Global — International perspectives, geopolitics
+- Headliner — Keynotes and featured speakers
 
 ### Step 2: Vibe
 
 **Title:** What's your SXSW vibe?
 
-**Subtitle:** Pick one or more.
+**Subtitle:** Pick as many as you want.
 
 **Vibe options:**
 - Learn Something — Talks, panels, workshops. Feed your brain.
@@ -67,7 +78,7 @@
 
 **Subtitle:** We'll only schedule days you pick.
 
-**Day labels:** Sat Mar 7 / Sun Mar 8 / Mon Mar 9 / Tue Mar 10 / Wed Mar 11 / Thu Mar 12 / Fri Mar 13 / Sat Mar 14 / Sun Mar 15
+**Day labels:** Thu Mar 12 / Fri Mar 13 / Sat Mar 14 / Sun Mar 15 / Mon Mar 16 / Tue Mar 17 / Wed Mar 18
 
 ### Step 4: Free Text
 
@@ -79,7 +90,7 @@
 
 ### Progress
 
-**Progress text:** Step {n} of 4
+**Progress text:** Step {n} of 6
 
 ### Submit
 
@@ -91,11 +102,11 @@
 
 **Rotating messages (cycle every 3 seconds):**
 
-1. Scanning 850+ sessions so you don't have to...
+1. Scanning 3,700+ sessions so you don't have to...
 2. Debating whether to schedule around taco breaks...
 3. Calculating optimal 6th Street proximity...
-4. Arguing with Claude about your music taste...
-5. Cross-referencing badge levels with session access...
+4. Arguing with the AI about your music taste...
+5. Making sure your badge actually gets you in...
 6. Squeezing in one more panel before happy hour...
 7. Filtering out sessions that are just startup pitches in disguise...
 8. Plotting the fastest route from the Convention Center to Rainey St...
@@ -110,16 +121,14 @@
 
 **Page title:** {name}'s SXSW Schedule
 
-**Day tab labels:** Sat 7 / Sun 8 / Mon 9 / Tue 10 / Wed 11 / Thu 12 / Fri 13 / Sat 14 / Sun 15
-
 **Session card labels:**
 - Time: {start_time} - {end_time}
 - Venue: {venue_name}
 - Track: {track_name}
 
-**Empty state:** Nothing scheduled for this day. Hit "Refine" to add sessions.
+**Empty state:** Nothing here yet. Hit "Refine with AI" to add sessions to this day.
 
-**Share button:** Share Schedule
+**Share button:** Share
 
 **Refine button:** Refine with AI
 
@@ -144,13 +153,13 @@
 
 ## Share
 
-**Share card title:** {name}'s SXSW 2026 Schedule
+**Share dialog title:** Share {name}'s SXSW Schedule
 
-**Share card description:** A personalized SXSW 2026 schedule, built by AI.
+**Share dialog subtitle:** Send this to your crew so you can actually find each other.
 
-**Copied toast:** Link copied
+**Share text (X/Threads):** Just got my SXSW 2026 schedule sorted by AI — here's what I'm hitting
 
-**OG image headline:** {name}'s SXSW Schedule — Built by AI
+**Copied toast:** Copied!
 
 ---
 
@@ -162,7 +171,9 @@
 
 **Generic error:** That didn't work. Give it another shot.
 
-**Rate limit:** Easy there — you're generating schedules faster than Franklin can smoke a brisket. Try again in a minute.
+**Rate limit (generate):** Easy there — you're generating schedules faster than Franklin can smoke a brisket. Try again in a few minutes.
+
+**Rate limit (refine):** You've been refining a lot — take a breather and try again in a few.
 
 ---
 
@@ -174,12 +185,24 @@
 
 **OG title:** South by AI — AI-Powered SXSW Schedule Builder
 
-**OG description:** 850+ sessions. One quiz. Your SXSW schedule, built by AI in seconds.
+**OG description:** 3,700+ sessions. One quiz. Your SXSW schedule, built by AI in seconds.
+
+**Schedule page title:** {name}'s SXSW Schedule - South by AI
+
+**Schedule page description:** Personalized SXSW 2026 schedule for {name}, built by AI.
+
+**Schedule OG title:** {name}'s SXSW Schedule
+
+**Schedule OG description:** Personalized SXSW 2026 schedule built by AI.
 
 ---
 
 ## Footer
 
-**Credit line:** Built with Claude by South by AI
+**Credit line:** Built by Alex Priest with Claude.
+
+**Buy me a coffee:** Buy me a coffee
 
 **SXSW disclaimer:** Not affiliated with or endorsed by SXSW LLC. Session data from the public SXSW schedule.
+
+**Layout footer:** Session details may change — always check sxsw.com for the latest.

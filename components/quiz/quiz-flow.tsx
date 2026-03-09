@@ -160,7 +160,7 @@ export function QuizFlow() {
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs text-muted">Step {stepIndex + 1} of {STEPS.length}</span>
         </div>
-        <div className="h-1 bg-white/5 rounded-full overflow-hidden" role="progressbar" aria-valuenow={stepIndex + 1} aria-valuemin={1} aria-valuemax={STEPS.length} aria-label="Quiz progress">
+        <div className="h-1 bg-s1 rounded-full overflow-hidden" role="progressbar" aria-valuenow={stepIndex + 1} aria-valuemin={1} aria-valuemax={STEPS.length} aria-label="Quiz progress">
           <div
             className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
@@ -191,7 +191,7 @@ export function QuizFlow() {
       </div>
 
       {error && (
-        <p role="alert" className="text-red-400 text-sm mb-4">{error}</p>
+        <p role="alert" className="text-error text-sm mb-4">{error}</p>
       )}
 
       {/* Navigation */}
@@ -199,7 +199,7 @@ export function QuizFlow() {
         {!isFirst && (
           <button
             onClick={back}
-            className="bg-black/5 dark:bg-white/10 text-text rounded-full px-6 py-2.5 hover:bg-black/10 dark:hover:bg-white/20 transition-all duration-200"
+            className="bg-s1 text-text rounded-full px-6 py-2.5 hover:bg-sh transition-all duration-200"
           >
             Back
           </button>
@@ -212,8 +212,8 @@ export function QuizFlow() {
           {isLast ? 'Generate My Schedule' : 'Next'}
         </button>
         {canAdvance() && (
-          <span className="text-xs text-muted/60 hidden sm:inline-flex items-center gap-1.5 ml-1">
-            press <kbd className="inline-flex items-center justify-center px-1.5 py-0.5 rounded bg-white/10 border border-white/10 text-[10px] font-medium text-muted">Enter ↵</kbd>
+          <span className="text-xs text-muted hidden sm:inline-flex items-center gap-1.5 ml-1">
+            press <kbd className="inline-flex items-center justify-center px-1.5 py-0.5 rounded bg-s2 border border-b1 text-[10px] font-medium text-muted">Enter ↵</kbd>
           </span>
         )}
       </div>

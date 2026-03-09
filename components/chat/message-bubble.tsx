@@ -13,7 +13,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
           isUser
             ? 'bg-primary text-white rounded-br-md'
-            : 'bg-white/5 border border-white/10 text-text rounded-bl-md'
+            : 'bg-s1 border border-b1 text-text rounded-bl-md'
         }`}
       >
         {message.content}

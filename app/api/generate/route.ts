@@ -9,7 +9,7 @@ export const maxDuration = 60
 
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for') || 'unknown'
+    const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1'
     if (!(await checkGenerateLimit(ip))) {
       return NextResponse.json(
         { error: 'Easy there — you\'re generating schedules faster than Franklin can smoke a brisket. Try again in a few minutes.' },
@@ -44,6 +44,20 @@ export async function POST(request: Request) {
     if (body.interests.length > 20) body.interests = body.interests.slice(0, 20)
     if (body.vibes.length > 10) body.vibes = body.vibes.slice(0, 10)
     if (body.days.length > 14) body.days = body.days.slice(0, 14)
+
+    // Validate array elements: must be strings, max 100 chars each
+    body.interests = body.interests.filter((v: unknown) => typeof v === 'string').map((v: string) => v.slice(0, 100))
+    body.vibes = body.vibes.filter((v: unknown) => typeof v === 'string').map((v: string) => v.slice(0, 100))
+    // Validate days against ISO date format
+    const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/
+    body.days = body.days.filter((v: unknown) => typeof v === 'string' && isoDateRegex.test(v))
+
+    if (!body.interests.length || !body.vibes.length || !body.days.length) {
+      return NextResponse.json(
+        { error: 'Invalid input values. Please check your selections and try again.' },
+        { status: 400 }
+      )
+    }
 
     const sessions = await getSessions()
     let days

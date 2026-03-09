@@ -7,10 +7,11 @@ export const alt = 'South by AI - Your SXSW Schedule'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
-export default async function OGImage({ params }: { params: { id: string } }) {
+export default async function OGImage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   let schedule
   try {
-    schedule = await getCachedSchedule(params.id)
+    schedule = await getCachedSchedule(id)
   } catch {
     // fall through to fallback
   }

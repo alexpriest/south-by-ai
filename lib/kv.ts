@@ -7,6 +7,10 @@ export function generateId(): string {
   return nanoid(10)
 }
 
+export function generateEditSecret(): string {
+  return nanoid(21)
+}
+
 export async function saveSchedule(schedule: StoredSchedule): Promise<{ editToken: string }> {
   if (!schedule.editToken) {
     schedule.editToken = nanoid(24)

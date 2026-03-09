@@ -61,10 +61,10 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
         return (
           <div
             key={hour}
-            className="absolute left-0 right-0 border-t border-white/5"
+            className="absolute left-0 right-0 border-t border-b1"
             style={{ top: `${top}%` }}
           >
-            <span className="absolute -top-2 left-0 w-12 text-xs text-muted/70 tabular-nums">
+            <span className="absolute -top-2 left-0 w-12 text-xs text-muted tabular-nums">
               {hour.toString().padStart(2, '0')}:00
             </span>
           </div>

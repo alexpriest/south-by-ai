@@ -3,8 +3,9 @@ import { notFound } from 'next/navigation'
 import { getCachedSchedule } from '@/lib/kv'
 import { ScheduleView } from './schedule-view'
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const schedule = await getCachedSchedule(params.id)
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const schedule = await getCachedSchedule(id)
   if (!schedule) return {}
 
   const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -12,7 +13,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     : process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : 'http://localhost:3000'
-  const ogImage = `${baseUrl}/s/${params.id}/opengraph-image`
+  const ogImage = `${baseUrl}/s/${id}/opengraph-image`
 
   return {
     title: `${schedule.name}'s SXSW Schedule - South by AI`,
@@ -30,8 +31,9 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 }
 
-export default async function SchedulePage({ params }: { params: { id: string } }) {
-  const schedule = await getCachedSchedule(params.id)
+export default async function SchedulePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const schedule = await getCachedSchedule(id)
 
   if (!schedule) {
     notFound()
