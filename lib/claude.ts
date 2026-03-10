@@ -332,13 +332,16 @@ export async function generateSchedule(
   }
 
   // Phase 3: Score and select top sessions
+  const includeAllSet = new Set(intent.includeAll)
   const scored: ScoredSession[] = merged.map(session => ({
     session,
-    score: scoreSession(session, preferences.interests, vibeTypes, intent.boostKeywords),
+    score: scoreSession(session, preferences.interests, vibeTypes, intent.boostKeywords)
+      + (includeAllSet.size > 0 && (includeAllSet.has(session.type) || includeAllSet.has(session.track)) ? 50 : 0),
   }))
 
-  // Select top sessions spread evenly across days
-  const sessionsForClaude = selectTopSessionsPerDay(scored, preferences.days, maxSessions)
+  // Select top sessions spread evenly across days — raise cap when user explicitly requested types
+  const effectiveMax = intent.includeAll.length > 0 ? Math.max(maxSessions, 200) : maxSessions
+  const sessionsForClaude = selectTopSessionsPerDay(scored, preferences.days, effectiveMax)
 
   console.log(`Pipeline: ${fullPool.length} pool → ${interestFiltered.length} interest → ${merged.length} merged → ${sessionsForClaude.length} for Claude`)
 
@@ -364,7 +367,7 @@ Each session needs a priority:
 - 3 = Worth considering
 
 ${VENUE_PROXIMITY_PROMPT}
-
+${intent.includeAll.length > 0 ? `\nIMPORTANT: The user explicitly requested ALL sessions of these types: ${intent.includeAll.join(', ')}. Include as many of these as possible — they should make up the majority of the schedule.\n` : ''}
 Response format:
 [
   {
