@@ -8,7 +8,7 @@ export function parseTime(time: string): number {
 export function getEffectiveEndMinutes(startTime: string, endTime: string): number {
   const start = parseTime(startTime)
   const end = parseTime(endTime)
-  return end <= start ? end + 1440 : end
+  return end < start ? end + 1440 : end
 }
 
 export function findOverlapGroups(sessions: ScheduleSession[]): ScheduleSession[][] {
