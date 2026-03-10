@@ -214,7 +214,7 @@ Response format:
         ],
       },
     ],
-  })
+  }, { timeout: 45000 })
 
   const parsed = parseClaudeJSON<ClaudeScheduleDay[]>(message, 'schedule')
 
@@ -320,7 +320,7 @@ ${JSON.stringify(availableSessionsForPrompt)}`,
       ...chatHistory.slice(-8),
       { role: 'user' as const, content: wrapUserInput(userMessage) },
     ],
-  })
+  }, { timeout: 45000 })
 
   const parsed = parseClaudeJSON<{ reply: string; days: ClaudeScheduleDay[] }>(message, 'refinement')
 
