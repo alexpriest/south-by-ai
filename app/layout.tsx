@@ -16,6 +16,13 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'http://localhost:3000'
+  ),
   title: 'South by AI — Your Personalized SXSW 2026 Schedule',
   description: '60-second quiz. Personalized SXSW 2026 schedule built by AI. No more tab overload.',
   icons: {
