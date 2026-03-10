@@ -530,7 +530,7 @@ export async function refineSchedule(
 
   const chatHistory = schedule.chatHistory.map((m) => ({
     role: m.role as 'user' | 'assistant',
-    content: m.content,
+    content: m.role === 'user' ? wrapUserInput(m.content) : m.content,
   }))
 
   const client = getClient()

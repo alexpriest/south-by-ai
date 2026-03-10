@@ -2,11 +2,11 @@ import { Ratelimit } from '@upstash/ratelimit'
 import { kv } from '@vercel/kv'
 
 export function getClientIP(request: Request): string {
+  // On Vercel, x-real-ip is set by the platform and cannot be spoofed by clients.
+  // x-forwarded-for is client-spoofable, so we only use x-real-ip.
   const realIp = request.headers.get('x-real-ip')
   if (realIp) return realIp
-  const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) return forwarded.split(',').pop()!.trim()
-  // Instead of a flat 'unknown' bucket, hash identifying headers to distribute
+  // Fallback: hash identifying headers to create a pseudo-unique bucket
   const ua = request.headers.get('user-agent') || ''
   const lang = request.headers.get('accept-language') || ''
   const raw = `${ua}:${lang}`

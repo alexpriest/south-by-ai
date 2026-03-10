@@ -16,6 +16,7 @@ export function NameInput({ value, onChange }: NameInputProps) {
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        maxLength={50}
         placeholder="First name works"
         className="w-full bg-s1 border border-b1 rounded-xl px-4 py-3 text-text placeholder:text-muted focus:border-primary/50 focus:ring-1 focus:ring-primary/25 focus:outline-none transition-colors duration-200"
         autoFocus

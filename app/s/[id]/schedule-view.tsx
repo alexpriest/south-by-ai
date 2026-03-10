@@ -18,6 +18,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
   const [viewMode, setViewMode] = useState<'timeline' | 'list' | 'map'>('timeline')
   const [isOwner, setIsOwner] = useState(false)
   const [swapError, setSwapError] = useState<string | null>(null)
+  const [swapping, setSwapping] = useState(false)
   const activeDay = currentSchedule.days[activeDayIndex]
 
   useEffect(() => {
@@ -26,6 +27,8 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
   }, [schedule.id])
 
   const handleSwap = useCallback(async (dayDate: string, sessionId: string) => {
+    if (swapping) return
+    setSwapping(true)
     setSwapError(null)
     const editToken = localStorage.getItem(`editToken:${currentSchedule.id}`)
     try {
@@ -48,8 +51,10 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
     } catch {
       setSwapError('Network error — check your connection and try again.')
       setTimeout(() => setSwapError(null), 4000)
+    } finally {
+      setSwapping(false)
     }
-  }, [currentSchedule.id])
+  }, [currentSchedule.id, swapping])
 
   const dayLabels = useMemo(() => currentSchedule.days.map((d) => {
     const date = new Date(d.date + 'T12:00:00')
@@ -58,7 +63,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
   }), [currentSchedule.days])
 
   return (
-    <main className="min-h-screen">
+    <main>
       {/* Header */}
       <div className="border-b border-white/5">
         <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">
@@ -248,20 +253,11 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">
-        <div className="flex justify-end mb-4">
-          <a
-            href="https://schedule.sxsw.com/2026/search/event"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-muted hover:text-accent transition-colors"
-          >
-            Browse all sessions on sxsw.com &rarr;
-          </a>
-        </div>
         {currentSchedule.days.length > 0 && (
           <>
-            {/* Day tabs */}
-            <nav aria-label="Schedule days" role="tablist" className="flex gap-1.5 mb-8 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+            {/* Day tabs + browse link */}
+            <div className="flex items-center justify-between gap-4 mb-8">
+              <nav aria-label="Schedule days" role="tablist" className="flex gap-1.5 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
               {dayLabels.map((label, i) => (
                 <button
                   key={i}
@@ -279,13 +275,24 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
                 </button>
               ))}
             </nav>
+              <a
+                href="https://schedule.sxsw.com/2026/search/event"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-muted hover:text-accent transition-colors whitespace-nowrap shrink-0 hidden md:block"
+              >
+                Browse all sessions &rarr;
+              </a>
+            </div>
 
             {activeDay && (
-              viewMode === 'timeline'
-                ? <TimelineView day={activeDay} onSwap={isOwner ? (sessionId) => handleSwap(activeDay.date, sessionId) : undefined} />
-                : viewMode === 'map'
-                ? <MapView day={activeDay} />
-                : <DayView day={activeDay} onSwap={isOwner ? (sessionId) => handleSwap(activeDay.date, sessionId) : undefined} />
+              <div role="tabpanel" aria-labelledby={`day-tab-${activeDayIndex}`}>
+                {viewMode === 'timeline'
+                  ? <TimelineView day={activeDay} onSwap={isOwner ? (sessionId) => handleSwap(activeDay.date, sessionId) : undefined} />
+                  : viewMode === 'map'
+                  ? <MapView day={activeDay} />
+                  : <DayView day={activeDay} onSwap={isOwner ? (sessionId) => handleSwap(activeDay.date, sessionId) : undefined} />}
+              </div>
             )}
           </>
         )}

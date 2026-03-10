@@ -47,7 +47,7 @@ export async function GET(
       events.push(
         [
           'BEGIN:VEVENT',
-          `UID:${session.id}@southbyai`,
+          `UID:${escapeIcsText(session.id)}@southbyai`,
           `DTSTART;TZID=America/Chicago:${dtstart}`,
           `DTEND;TZID=America/Chicago:${dtend}`,
           `SUMMARY:${escapeIcsText(session.title)}`,

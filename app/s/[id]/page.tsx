@@ -15,17 +15,18 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       : 'http://localhost:3000'
   const ogImage = `${baseUrl}/s/${id}/opengraph-image`
 
+  const safeName = schedule.name.replace(/[<>"&]/g, '')
   return {
-    title: `${schedule.name}'s SXSW Schedule - South by AI`,
-    description: `Personalized SXSW 2026 schedule for ${schedule.name}, built by AI.`,
+    title: `${safeName}'s SXSW Schedule - South by AI`,
+    description: `Personalized SXSW 2026 schedule for ${safeName}, built by AI.`,
     openGraph: {
-      title: `${schedule.name}'s SXSW Schedule`,
+      title: `${safeName}'s SXSW Schedule`,
       description: `Personalized SXSW 2026 schedule built by AI.`,
       images: [ogImage],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${schedule.name}'s SXSW Schedule`,
+      title: `${safeName}'s SXSW Schedule`,
       images: [ogImage],
     },
   }

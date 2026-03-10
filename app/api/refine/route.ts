@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { getSessions } from '@/lib/sessions'
 import { refineSchedule } from '@/lib/claude'
 import { getSchedule, saveSchedule } from '@/lib/kv'
 import { checkRefineLimit, getClientIP } from '@/lib/rate-limit'
+
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b))
+}
 
 export const maxDuration = 60
 
@@ -18,14 +24,21 @@ export async function POST(request: Request) {
 
     const { scheduleId, message, editToken } = await request.json()
 
-    if (typeof scheduleId !== 'string' || typeof message !== 'string') {
+    if (typeof scheduleId !== 'string' || typeof message !== 'string' || typeof editToken !== 'string') {
       return NextResponse.json(
         { error: 'Invalid request data.' },
         { status: 400 }
       )
     }
 
-    if (!scheduleId || !message?.trim()) {
+    if (!scheduleId || scheduleId.length > 30 || !/^[a-zA-Z0-9_-]+$/.test(scheduleId)) {
+      return NextResponse.json(
+        { error: 'Invalid schedule ID.' },
+        { status: 400 }
+      )
+    }
+
+    if (!message?.trim()) {
       return NextResponse.json(
         { error: 'We need a message to work with. Type what you\'d like to change and try again.' },
         { status: 400 }
@@ -42,7 +55,7 @@ export async function POST(request: Request) {
       )
     }
 
-    if (!editToken || editToken !== schedule.editToken) {
+    if (!editToken || !safeCompare(editToken, schedule.editToken || '')) {
       return NextResponse.json(
         { error: 'You don\'t have permission to edit this schedule.' },
         { status: 403 }
@@ -70,7 +83,7 @@ export async function POST(request: Request) {
     schedule.days = days
     schedule.chatHistory.push(
       { role: 'user', content: trimmedMessage },
-      { role: 'assistant', content: reply }
+      { role: 'assistant', content: reply.slice(0, 2000) }
     )
 
     if (schedule.chatHistory.length > 20) {

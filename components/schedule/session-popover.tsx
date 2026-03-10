@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import type { ScheduleSession } from '@/lib/types'
 import { getTrackColor } from '@/lib/track-colors'
+import { safeUrl } from '@/lib/safe-url'
 
 interface SessionPopoverProps {
   session: ScheduleSession
@@ -96,7 +97,7 @@ export function SessionPopover({ session, anchorRect, onClose }: SessionPopoverP
             {session.speakers.map((speaker) => (
               <a
                 key={speaker.name}
-                href={speaker.url}
+                href={safeUrl(speaker.url)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-accent-readable hover:underline"
@@ -115,7 +116,7 @@ export function SessionPopover({ session, anchorRect, onClose }: SessionPopoverP
       )}
 
       <a
-        href={session.url}
+        href={safeUrl(session.url)}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline mt-3"

@@ -2,6 +2,7 @@
 
 import type { ScheduleSession } from '@/lib/types'
 import { getTrackColor } from '@/lib/track-colors'
+import { safeUrl } from '@/lib/safe-url'
 
 interface SessionCardProps {
   session: ScheduleSession
@@ -20,11 +21,11 @@ export function SessionCard({ session, onSwap }: SessionCardProps) {
       aria-label={`${session.title} (opens in new tab)`}
       onClick={(e) => {
         if ((e.target as HTMLElement).closest('a, button')) return
-        window.open(session.url, '_blank', 'noopener,noreferrer')
+        window.open(safeUrl(session.url), '_blank', 'noopener,noreferrer')
       }}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && !(e.target as HTMLElement).closest('a, button')) {
-          window.open(session.url, '_blank', 'noopener,noreferrer')
+          window.open(safeUrl(session.url), '_blank', 'noopener,noreferrer')
         }
       }}
       style={{ borderLeftColor: trackColor }}
@@ -82,7 +83,7 @@ export function SessionCard({ session, onSwap }: SessionCardProps) {
                 <span key={speaker.name}>
                   {i > 0 && ', '}
                   <a
-                    href={speaker.url}
+                    href={safeUrl(speaker.url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}

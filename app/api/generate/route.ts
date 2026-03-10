@@ -19,9 +19,16 @@ export async function POST(request: Request) {
 
     const body = await request.json() as QuizState
 
-    if (typeof body.name !== 'string' || !Array.isArray(body.interests) || !Array.isArray(body.days) || !Array.isArray(body.vibes)) {
+    const VALID_BADGES = ['Platinum Badge', 'Innovation Badge', 'Music Badge', 'Film & TV Badge']
+    if (typeof body.name !== 'string' || typeof body.badge !== 'string' || !Array.isArray(body.interests) || !Array.isArray(body.days) || !Array.isArray(body.vibes)) {
       return NextResponse.json(
         { error: 'Invalid request data.' },
+        { status: 400 }
+      )
+    }
+    if (!VALID_BADGES.includes(body.badge)) {
+      return NextResponse.json(
+        { error: 'Invalid badge type.' },
         { status: 400 }
       )
     }
@@ -105,7 +112,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ id, editToken })
   } catch (e) {
     const err = e instanceof Error ? e.message : String(e)
-    console.error('Generate error:', err, e)
+    console.error('Generate error:', err)
     return NextResponse.json(
       { error: 'Something broke building your schedule. Hit try again — AI has its off moments.' },
       { status: 500 }

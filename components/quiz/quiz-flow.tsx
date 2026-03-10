@@ -52,7 +52,7 @@ export function QuizFlow() {
   const isLast = stepIndex === STEPS.length - 1
   const progress = ((stepIndex + 1) / STEPS.length) * 100
 
-  const canAdvance = () => {
+  const canAdvance = useCallback(() => {
     switch (step) {
       case 'name': return quiz.name.trim().length > 0
       case 'badge': return quiz.badge.length > 0
@@ -61,7 +61,7 @@ export function QuizFlow() {
       case 'days': return quiz.days.length > 0
       case 'freeText': return true
     }
-  }
+  }, [step, quiz])
 
   const goToStep = useCallback((newStep: Step, dir: 'forward' | 'back') => {
     setDirection(dir)
@@ -70,13 +70,13 @@ export function QuizFlow() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
 
-  const next = () => {
+  const next = useCallback(() => {
     if (isLast) {
       submit()
     } else {
       goToStep(STEPS[stepIndex + 1], 'forward')
     }
-  }
+  }, [isLast, stepIndex, goToStep])
 
   const back = () => {
     if (!isFirst) {
@@ -134,7 +134,7 @@ export function QuizFlow() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [step, quiz, loading])
+  }, [canAdvance, next, loading])
 
   if (loading) {
     return (

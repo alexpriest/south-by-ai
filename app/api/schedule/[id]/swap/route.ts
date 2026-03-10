@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { getSchedule, saveSchedule } from '@/lib/kv'
 import { checkSwapLimit, getClientIP } from '@/lib/rate-limit'
 import { parseTime, getEffectiveEndMinutes } from '@/lib/schedule-utils'
+
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b))
+}
 
 export async function POST(
   request: NextRequest,
@@ -18,8 +24,12 @@ export async function POST(
   const { id } = await params
   const { dayDate, sessionId, editToken } = await request.json()
 
-  if (typeof dayDate !== 'string' || typeof sessionId !== 'string' || !dayDate || !sessionId) {
+  if (typeof dayDate !== 'string' || typeof sessionId !== 'string' || typeof editToken !== 'string' || !dayDate || !sessionId) {
     return NextResponse.json({ error: 'Missing dayDate or sessionId' }, { status: 400 })
+  }
+
+  if (sessionId.length > 100 || !/^[a-zA-Z0-9_-]+$/.test(sessionId)) {
+    return NextResponse.json({ error: 'Invalid sessionId' }, { status: 400 })
   }
 
   const schedule = await getSchedule(id)
@@ -27,7 +37,7 @@ export async function POST(
     return NextResponse.json({ error: 'Schedule not found' }, { status: 404 })
   }
 
-  if (!editToken || editToken !== schedule.editToken) {
+  if (!editToken || !safeCompare(editToken, schedule.editToken || '')) {
     return NextResponse.json({ error: 'You don\'t have permission to edit this schedule.' }, { status: 403 })
   }
 
