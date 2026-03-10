@@ -51,15 +51,18 @@ export function ChatInterface({ scheduleId, initialMessages, onScheduleUpdate }:
         body: JSON.stringify({ scheduleId, message: text.trim(), editToken: localStorage.getItem(`editToken:${scheduleId}`) }),
       })
 
-      if (!res.ok) throw new Error('Failed to refine')
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || 'Failed to refine')
+      }
 
       const data = await res.json()
       setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }])
       onScheduleUpdate()
-    } catch {
+    } catch (e) {
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: 'That didn\'t work. Give it another shot.' },
+        { role: 'assistant', content: e instanceof Error ? e.message : 'That didn\'t work. Give it another shot.' },
       ])
     } finally {
       setSending(false)
