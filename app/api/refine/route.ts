@@ -59,6 +59,14 @@ export async function POST(request: Request) {
       ;({ days, reply } = await refineSchedule(schedule, trimmedMessage, sessions))
     }
 
+    const totalSessions = days.reduce((sum, d) => sum + d.sessions.length, 0)
+    if (totalSessions === 0) {
+      return NextResponse.json(
+        { error: 'The AI returned an empty schedule — your original is unchanged. Try rephrasing your request.' },
+        { status: 500 }
+      )
+    }
+
     schedule.days = days
     schedule.chatHistory.push(
       { role: 'user', content: trimmedMessage },

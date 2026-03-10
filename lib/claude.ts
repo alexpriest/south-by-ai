@@ -113,11 +113,14 @@ const KEYWORD_TO_TYPE: Record<string, string[]> = {
 
 const KEYWORD_TO_TRACK: Record<string, string[]> = {
   ai: ['Tech & AI'], 'artificial intelligence': ['Tech & AI'], tech: ['Tech & AI'], technology: ['Tech & AI'],
+  crypto: ['Tech & AI'], blockchain: ['Tech & AI'], web3: ['Tech & AI'],
+  vr: ['Tech & AI'], ar: ['Tech & AI'], xr: ['Tech & AI', 'XR Experience Competition'],
   design: ['Design'], culture: ['Culture'], health: ['Health'], wellness: ['Health'],
-  marketing: ['Brand & Marketing'], branding: ['Brand & Marketing'],
+  marketing: ['Brand & Marketing'], branding: ['Brand & Marketing'], brand: ['Brand & Marketing'],
   startups: ['Startups'], startup: ['Startups'],
   sports: ['Sports & Gaming'], gaming: ['Sports & Gaming'], esports: ['Sports & Gaming'],
-  'film & tv': ['Film & TV'], television: ['Film & TV'],
+  'film & tv': ['Film & TV'], television: ['Film & TV'], tv: ['Film & TV'],
+  documentary: ['Documentary Feature Competition', 'Documentary Short Competition', 'Documentary Spotlight'],
   workplace: ['Workplace'], career: ['Workplace'],
   global: ['Global'], climate: ['Cities & Climate'], cities: ['Cities & Climate'],
   creator: ['Creator Economy'], creators: ['Creator Economy'],
@@ -170,8 +173,9 @@ function parseFreetextIntent(freeText: string): FreetextIntent {
   intent.exclude = Array.from(new Set(intent.exclude))
 
   // Extract remaining words as boost keywords (skip common stop words and already-parsed patterns)
-  const stopWords = new Set(['i', 'me', 'my', 'want', 'to', 'see', 'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'for', 'of', 'with', 'is', 'it', 'that', 'this', 'all', 'every', 'no', 'skip', 'avoid', 'give', 'show', 'some', 'more', 'less', 'really', 'very', 'please', 'just', 'like', 'love', 'into', 'about', 'would', 'also', 'anything', 'something', 'everything', 'nothing'])
-  const words = lower.replace(/[^a-z0-9\s'-]/g, '').split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w))
+  const stopWords = new Set(['i', 'me', 'my', 'want', 'to', 'see', 'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'for', 'of', 'with', 'is', 'it', 'that', 'this', 'all', 'every', 'no', 'skip', 'avoid', 'give', 'show', 'some', 'more', 'less', 'really', 'very', 'please', 'just', 'like', 'love', 'into', 'about', 'would', 'also', 'anything', 'something', 'everything', 'nothing', 'add', 'include', 'sessions', 'events', 'stuff', 'things', 'lots', 'much', 'many', 'few'])
+  const isKnownKeyword = (w: string) => w in KEYWORD_TO_TYPE || w in KEYWORD_TO_TRACK
+  const words = lower.replace(/[^a-z0-9\s'-]/g, '').split(/\s+/).filter(w => !stopWords.has(w) && (w.length > 2 || isKnownKeyword(w)))
   // Multi-word boost: check 2-word and 3-word phrases against session titles later
   intent.boostKeywords = Array.from(new Set(words))
 
@@ -313,12 +317,29 @@ export async function generateSchedule(
     merged = [...merged, ...toAdd]
   }
 
-  // Add sessions with boost keyword matches in title from full pool
+  // Add sessions matching boost keywords — search across all session fields,
+  // plus resolve semantic mappings (e.g. "concerts" → Showcase type)
   if (intent.boostKeywords.length > 0) {
+    // Resolve keyword → type/track semantic mappings
+    const boostTypes = new Set<string>()
+    const boostTracks = new Set<string>()
+    for (const kw of intent.boostKeywords) {
+      if (KEYWORD_TO_TYPE[kw]) KEYWORD_TO_TYPE[kw].forEach(t => boostTypes.add(t))
+      if (KEYWORD_TO_TRACK[kw]) KEYWORD_TO_TRACK[kw].forEach(t => boostTracks.add(t))
+    }
+
+    // Short keywords (<=3 chars) only match via semantic maps to avoid
+    // false positives (e.g. "ai" matching "sustainability", "entertainment")
+    const textSearchKeywords = intent.boostKeywords.filter(kw => kw.length > 3)
+
     const toAdd = fullPool.filter(s => {
       if (mergedIds.has(s.id)) return false
-      const titleLower = s.title.toLowerCase()
-      return intent.boostKeywords.some(kw => titleLower.includes(kw))
+      // Semantic type/track match
+      if (boostTypes.has(s.type) || boostTracks.has(s.track)) return true
+      // Direct text search across session fields (longer keywords only)
+      if (textSearchKeywords.length === 0) return false
+      const searchable = `${s.title}\t${s.track}\t${s.type}\t${s.format}\t${s.tags.join(' ')}`.toLowerCase()
+      return textSearchKeywords.some(kw => searchable.includes(kw))
     })
     for (const s of toAdd) mergedIds.add(s.id)
     merged = [...merged, ...toAdd]
@@ -336,13 +357,28 @@ export async function generateSchedule(
   const includeAllSet = new Set(intent.includeAll)
   const scored: ScoredSession[] = merged.map(session => ({
     session,
-    score: scoreSession(session, preferences.interests, vibeTypes, intent.boostKeywords)
-      + (includeAllSet.size > 0 && (includeAllSet.has(session.type) || includeAllSet.has(session.track)) ? 50 : 0),
+    score: scoreSession(session, preferences.interests, vibeTypes, intent.boostKeywords),
   }))
 
-  // Select top sessions spread evenly across days — raise to 150 when user explicitly requested types
-  const effectiveMax = intent.includeAll.length > 0 ? 150 : maxSessions
-  const sessionsForClaude = selectTopSessionsPerDay(scored, preferences.days, effectiveMax)
+  let sessionsForClaude: Session[]
+  if (includeAllSet.size > 0) {
+    // Split into includeAll matches and everything else, then combine
+    const includeAllSessions = scored
+      .filter(s => includeAllSet.has(s.session.type) || includeAllSet.has(s.session.track))
+      .sort((a, b) => b.score - a.score)
+    const otherSessions = scored
+      .filter(s => !includeAllSet.has(s.session.type) && !includeAllSet.has(s.session.track))
+      .sort((a, b) => b.score - a.score)
+    // Take all includeAll sessions (up to 120), then fill remaining slots with other types
+    const includeAllCap = Math.min(includeAllSessions.length, 120)
+    const otherCap = Math.max(150 - includeAllCap, 30)
+    sessionsForClaude = [
+      ...includeAllSessions.slice(0, includeAllCap).map(s => s.session),
+      ...otherSessions.slice(0, otherCap).map(s => s.session),
+    ]
+  } else {
+    sessionsForClaude = selectTopSessionsPerDay(scored, preferences.days, maxSessions)
+  }
 
   console.log(`Pipeline: ${fullPool.length} pool → ${interestFiltered.length} interest → ${merged.length} merged → ${sessionsForClaude.length} for Claude`)
 
@@ -391,7 +427,7 @@ async function callClaudeForSchedule(
   const includeAllActive = intent.includeAll.length > 0
 
   const sessionGuidance = includeAllActive
-    ? `Select the best 6-10 sessions per day, prioritize them, and write a brief personalized reason for each pick. IMPORTANT: The user explicitly requested ALL sessions of these types: ${intent.includeAll.join(', ')}. Include every single one of those in addition to your other picks. If there are more than 15 sessions per day, only include id and priority (omit reason) to stay within output limits.`
+    ? `Build a schedule with 8-15 sessions per day. The user wants ALL ${intent.includeAll.join(', ')} sessions included, but ALSO wants a well-rounded schedule. For each day, include all available ${intent.includeAll.join('/')} sessions AND at least 3-4 non-${intent.includeAll.join('/')} sessions (panels, screenings, special events, etc.) that match their interests. Write a brief reason for each pick. If there are more than 15 sessions per day, only include id and priority (omit reason) to stay within output limits.`
     : `Select the best 6-10 sessions per day, prioritize them, and write a brief personalized reason for each pick.`
 
   const client = getClient()
