@@ -279,7 +279,8 @@ interface ClaudeScheduleDay {
 
 export async function generateSchedule(
   preferences: QuizState,
-  sessions: Session[]
+  sessions: Session[],
+  maxSessions: number = 100
 ): Promise<DaySchedule[]> {
   // Phase 1: Structured filtering
   const fullPool = filterByBadgeAndDays(sessions, preferences.days, preferences.badge)
@@ -336,8 +337,8 @@ export async function generateSchedule(
     score: scoreSession(session, preferences.interests, vibeTypes, intent.boostKeywords),
   }))
 
-  // Select top 150 spread evenly across days
-  const sessionsForClaude = selectTopSessionsPerDay(scored, preferences.days, 150)
+  // Select top sessions spread evenly across days
+  const sessionsForClaude = selectTopSessionsPerDay(scored, preferences.days, maxSessions)
 
   console.log(`Pipeline: ${fullPool.length} pool → ${interestFiltered.length} interest → ${merged.length} merged → ${sessionsForClaude.length} for Claude`)
 
@@ -346,8 +347,8 @@ export async function generateSchedule(
   // Phase 4: Claude curation
   const client = getClient()
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 8192,
     system: [
       {
         type: 'text',
@@ -393,7 +394,7 @@ Response format:
         ],
       },
     ],
-  }, { timeout: 25000 })
+  }, { timeout: 45000 })
 
   const parsed = parseClaudeJSON<ClaudeScheduleDay[]>(message, 'schedule')
 
@@ -450,8 +451,8 @@ export async function refineSchedule(
 
   const client = getClient()
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 8192,
     system: [
       {
         type: 'text',
@@ -499,7 +500,7 @@ ${JSON.stringify(availableSessionsForPrompt)}`,
       ...chatHistory.slice(-8),
       { role: 'user' as const, content: wrapUserInput(userMessage) },
     ],
-  }, { timeout: 25000 })
+  }, { timeout: 45000 })
 
   const parsed = parseClaudeJSON<{ reply: string; days: ClaudeScheduleDay[] }>(message, 'refinement')
 

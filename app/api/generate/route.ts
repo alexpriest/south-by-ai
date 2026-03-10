@@ -62,19 +62,26 @@ export async function POST(request: Request) {
     const sessions = await getSessions()
     let days
     let lastError: unknown
-    for (let attempt = 0; attempt < 2; attempt++) {
+
+    // Attempt 1: 100 sessions (normal)
+    try {
+      days = await generateSchedule(body, sessions, 100)
+    } catch (err) {
+      lastError = err
+      const msg = err instanceof Error ? err.message : String(err)
+      console.warn(`Generate attempt 1 failed (100 sessions): ${msg}`)
+
+      // Attempt 2: 50 sessions (fast fallback)
+      await new Promise(r => setTimeout(r, 500))
       try {
-        days = await generateSchedule(body, sessions)
-        break
-      } catch (err) {
-        lastError = err
-        const msg = err instanceof Error ? err.message : String(err)
-        console.warn(`Generate attempt ${attempt + 1} failed: ${msg}`)
-        if (attempt === 0) {
-          await new Promise(r => setTimeout(r, 1000))
-        }
+        days = await generateSchedule(body, sessions, 50)
+      } catch (err2) {
+        lastError = err2
+        const msg2 = err2 instanceof Error ? err2.message : String(err2)
+        console.warn(`Generate attempt 2 failed (50 sessions): ${msg2}`)
       }
     }
+
     if (!days) {
       const msg = lastError instanceof Error ? lastError.message : String(lastError)
       console.error(`All generate attempts failed. Last error: ${msg}`, lastError)
