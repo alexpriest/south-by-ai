@@ -1,3 +1,5 @@
+'use client'
+
 import type { ScheduleSession } from '@/lib/types'
 import { getTrackColor } from '@/lib/track-colors'
 
@@ -12,13 +14,21 @@ export function SessionCard({ session, onSwap }: SessionCardProps) {
   const trackColor = getTrackColor(session.track)
 
   return (
-    <a
-      href={session.url}
-      target="_blank"
-      rel="noopener noreferrer"
+    <div
+      role="link"
+      tabIndex={0}
       aria-label={`${session.title} (opens in new tab)`}
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest('a, button')) return
+        window.open(session.url, '_blank', 'noopener,noreferrer')
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && !(e.target as HTMLElement).closest('a, button')) {
+          window.open(session.url, '_blank', 'noopener,noreferrer')
+        }
+      }}
       style={{ borderLeftColor: trackColor }}
-      className={`group block border-l-[3px] bg-s1 backdrop-blur-md border-t border-r border-b border-b1 rounded-xl p-5 hover:bg-sh hover:border-b2 transition-all duration-200 ${
+      className={`group block border-l-[3px] bg-s1 backdrop-blur-md border-t border-r border-b border-b1 rounded-xl p-5 hover:bg-sh hover:border-b2 transition-all duration-200 cursor-pointer ${
         isAlt ? 'opacity-60' : ''
       }`}
     >
@@ -34,7 +44,7 @@ export function SessionCard({ session, onSwap }: SessionCardProps) {
         <button
           type="button"
           className="text-xs text-muted hover:text-primary transition-colors cursor-pointer flex items-center gap-1 mb-2 bg-transparent border-none p-0 min-h-[44px]"
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSwap(); }}
+          onClick={(e) => { e.stopPropagation(); onSwap(); }}
           aria-label={`Make "${session.title}" your top pick`}
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -76,6 +86,7 @@ export function SessionCard({ session, onSwap }: SessionCardProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
                     className="text-accent-readable hover:underline"
                   >
                     {speaker.name}
@@ -91,6 +102,6 @@ export function SessionCard({ session, onSwap }: SessionCardProps) {
           </svg>
         </div>
       </div>
-    </a>
+    </div>
   )
 }

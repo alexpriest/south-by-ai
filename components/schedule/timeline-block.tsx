@@ -17,9 +17,12 @@ export function TimelineBlock({ session, style, isTopPick, compact, onClick, onS
   const isAlternative = !isTopPick && (session.priority || 2) >= 2
 
   return (
-    <button
+    <div
       id={`timeline-block-${session.id}`}
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}
       style={{
         ...style,
         borderLeftColor: trackColor,
@@ -94,6 +97,6 @@ export function TimelineBlock({ session, style, isTopPick, compact, onClick, onS
           </div>
         </div>
       )}
-    </button>
+    </div>
   )
 }
