@@ -13,7 +13,7 @@ interface TimelineViewProps {
 
 const PX_PER_HOUR = 80
 const START_HOUR = 9
-const END_HOUR = 23
+const END_HOUR = 24
 const TOTAL_MINUTES = (END_HOUR - START_HOUR) * 60
 const CONTAINER_HEIGHT = (END_HOUR - START_HOUR) * PX_PER_HOUR
 const START_MINUTES = START_HOUR * 60
