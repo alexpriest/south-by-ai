@@ -11,13 +11,13 @@ export function getClientIP(request: Request): string {
 
 const generateLimiter = new Ratelimit({
   redis: kv,
-  limiter: Ratelimit.slidingWindow(100, '1 h'),
+  limiter: Ratelimit.slidingWindow(10, '1 h'),
   prefix: 'ratelimit:gen',
 })
 
 const refineLimiter = new Ratelimit({
   redis: kv,
-  limiter: Ratelimit.slidingWindow(200, '1 h'),
+  limiter: Ratelimit.slidingWindow(30, '1 h'),
   prefix: 'ratelimit:refine',
 })
 
