@@ -391,7 +391,7 @@ async function callClaudeForSchedule(
   const includeAllActive = intent.includeAll.length > 0
 
   const sessionGuidance = includeAllActive
-    ? `Include as many sessions as possible from the provided list. The user explicitly requested ALL sessions of these types: ${intent.includeAll.join(', ')}. If there are more than 15 sessions per day, only include id and priority (omit reason) to stay within output limits.`
+    ? `Select the best 6-10 sessions per day, prioritize them, and write a brief personalized reason for each pick. IMPORTANT: The user explicitly requested ALL sessions of these types: ${intent.includeAll.join(', ')}. Include every single one of those in addition to your other picks. If there are more than 15 sessions per day, only include id and priority (omit reason) to stay within output limits.`
     : `Select the best 6-10 sessions per day, prioritize them, and write a brief personalized reason for each pick.`
 
   const client = getClient()
