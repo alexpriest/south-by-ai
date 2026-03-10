@@ -83,10 +83,14 @@ const VENUE_COORDS: Record<string, { lat: number; lng: number }> = {
   'Empire Control Room': { lat: 30.2685, lng: -97.7357 },
 }
 
+const VENUE_LOOKUP = Object.entries(VENUE_COORDS).map(
+  ([name, coords]) => [name.toLowerCase(), coords] as const
+)
+
 export function getVenueCoords(venue: string): { lat: number; lng: number } | null {
   const lower = venue.toLowerCase()
-  for (const [name, coords] of Object.entries(VENUE_COORDS)) {
-    if (lower.includes(name.toLowerCase())) {
+  for (const [name, coords] of VENUE_LOOKUP) {
+    if (lower.includes(name)) {
       return coords
     }
   }

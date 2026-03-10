@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server'
 import { getSessions } from '@/lib/sessions'
 import { refineSchedule } from '@/lib/claude'
 import { getSchedule, saveSchedule } from '@/lib/kv'
-import { checkRefineLimit } from '@/lib/rate-limit'
+import { checkRefineLimit, getClientIP } from '@/lib/rate-limit'
 
 export const maxDuration = 60
 
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1'
+    const ip = getClientIP(request)
     if (!(await checkRefineLimit(ip))) {
       return NextResponse.json(
         { error: 'You\'ve been refining a lot — take a breather and try again in a few.' },

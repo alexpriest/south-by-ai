@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import type { DaySchedule } from '@/lib/types'
 import { SessionCard } from './session-card'
 import { findOverlapGroups } from '@/lib/schedule-utils'
@@ -21,7 +21,7 @@ export function DayView({ day, onSwap }: DayViewProps) {
     )
   }
 
-  const groups = findOverlapGroups(day.sessions)
+  const groups = useMemo(() => findOverlapGroups(day.sessions), [day.sessions])
 
   const toggleGroup = (index: number) => {
     setExpandedGroups((prev) => {

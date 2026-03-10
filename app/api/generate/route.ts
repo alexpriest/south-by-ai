@@ -3,13 +3,13 @@ import type { QuizState } from '@/lib/types'
 import { getSessions } from '@/lib/sessions'
 import { generateSchedule } from '@/lib/claude'
 import { generateId, saveSchedule } from '@/lib/kv'
-import { checkGenerateLimit } from '@/lib/rate-limit'
+import { checkGenerateLimit, getClientIP } from '@/lib/rate-limit'
 
 export const maxDuration = 60
 
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1'
+    const ip = getClientIP(request)
     if (!(await checkGenerateLimit(ip))) {
       return NextResponse.json(
         { error: 'Easy there — you\'re generating schedules faster than Franklin can smoke a brisket. Try again in a few minutes.' },

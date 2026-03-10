@@ -32,6 +32,13 @@ interface VenueStop {
 
 const STOP_COLORS = ['#FF6B35', '#00D4AA', '#3B82F6', '#A855F7', '#EC4899', '#F59E0B', '#10B981', '#EF4444']
 
+const TIME_FILTERS: { value: TimeFilter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'morning', label: 'Morning' },
+  { value: 'afternoon', label: 'Afternoon' },
+  { value: 'evening', label: 'Evening' },
+]
+
 export function MapView({ day }: MapViewProps) {
   const mapRef = useRef<any>(null)
   const markersRef = useRef<any>(null)
@@ -45,17 +52,17 @@ export function MapView({ day }: MapViewProps) {
 
   // Compute stops eagerly from day data + filter (no dependency on map)
   const stops = useMemo((): VenueStop[] => {
-    const filtered = day.sessions.filter((s) => {
-      if (timeFilter !== 'all' && getTimeFilter(s) !== timeFilter) return false
-      return getVenueCoords(s.venue) !== null
-    })
-
-    const sorted = [...filtered].sort((a, b) => a.startTime.localeCompare(b.startTime))
+    const withCoords = day.sessions
+      .map((s) => ({ session: s, coords: getVenueCoords(s.venue) }))
+      .filter((x): x is { session: ScheduleSession; coords: { lat: number; lng: number } } => {
+        if (!x.coords) return false
+        if (timeFilter !== 'all' && getTimeFilter(x.session) !== timeFilter) return false
+        return true
+      })
+      .sort((a, b) => a.session.startTime.localeCompare(b.session.startTime))
 
     const venueGroups = new Map<string, ScheduleSession[]>()
-    sorted.forEach((session) => {
-      const coords = getVenueCoords(session.venue)
-      if (!coords) return
+    withCoords.forEach(({ session, coords }) => {
       const key = `${coords.lat},${coords.lng}`
       if (!venueGroups.has(key)) venueGroups.set(key, [])
       venueGroups.get(key)!.push(session)
@@ -91,12 +98,15 @@ export function MapView({ day }: MapViewProps) {
     if (typeof window === 'undefined') return
     if ((window as any).L) { setLoaded(true); return }
 
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-    link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY='
-    link.crossOrigin = 'anonymous'
-    document.head.appendChild(link)
+    const leafletCssHref = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+    if (!document.querySelector(`link[href="${leafletCssHref}"]`)) {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = leafletCssHref
+      link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY='
+      link.crossOrigin = 'anonymous'
+      document.head.appendChild(link)
+    }
 
     const script = document.createElement('script')
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
@@ -229,18 +239,11 @@ export function MapView({ day }: MapViewProps) {
     setActiveStop(activeStop === stopNumber ? null : stopNumber)
   }
 
-  const filters: { value: TimeFilter; label: string }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'morning', label: 'Morning' },
-    { value: 'afternoon', label: 'Afternoon' },
-    { value: 'evening', label: 'Evening' },
-  ]
-
   return (
     <div>
       {/* Time filter pills */}
       <div className="flex gap-2 mb-4">
-        {filters.map((f) => (
+        {TIME_FILTERS.map((f) => (
           <button
             key={f.value}
             onClick={() => setTimeFilter(f.value)}

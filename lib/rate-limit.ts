@@ -1,6 +1,14 @@
 import { Ratelimit } from '@upstash/ratelimit'
 import { kv } from '@vercel/kv'
 
+export function getClientIP(request: Request): string {
+  const realIp = request.headers.get('x-real-ip')
+  if (realIp) return realIp
+  const forwarded = request.headers.get('x-forwarded-for')
+  if (forwarded) return forwarded.split(',')[0].trim()
+  return 'unknown'
+}
+
 const generateLimiter = new Ratelimit({
   redis: kv,
   limiter: Ratelimit.slidingWindow(100, '1 h'),

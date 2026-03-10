@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSchedule, saveSchedule } from '@/lib/kv'
-import { checkSwapLimit } from '@/lib/rate-limit'
+import { checkSwapLimit, getClientIP } from '@/lib/rate-limit'
+import { parseTime } from '@/lib/schedule-utils'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0].trim() || '127.0.0.1'
+  const ip = getClientIP(request)
   if (!(await checkSwapLimit(ip))) {
     return NextResponse.json(
       { error: 'Too many swaps — slow down and try again in a few minutes.' },
@@ -42,9 +43,11 @@ export async function POST(
 
   // Find overlapping sessions: two sessions overlap if
   // sessionA.startTime < sessionB.endTime && sessionB.startTime < sessionA.endTime
-  const overlapping = day.sessions.filter(
-    (s) => s.startTime < promoted.endTime && promoted.startTime < s.endTime
-  )
+  const promotedStart = parseTime(promoted.startTime)
+  const promotedEnd = parseTime(promoted.endTime)
+  const overlapping = day.sessions.filter((s) => {
+    return parseTime(s.startTime) < promotedEnd && promotedStart < parseTime(s.endTime)
+  })
 
   // Demote any current top picks in the same time slot
   for (const s of overlapping) {

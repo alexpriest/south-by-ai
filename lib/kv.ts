@@ -23,6 +23,4 @@ export async function getSchedule(id: string): Promise<StoredSchedule | null> {
   return kv.get<StoredSchedule>(`schedule:${id}`)
 }
 
-export const getCachedSchedule = cache(async (id: string): Promise<StoredSchedule | null> => {
-  return kv.get<StoredSchedule>(`schedule:${id}`)
-})
+export const getCachedSchedule = cache(getSchedule)

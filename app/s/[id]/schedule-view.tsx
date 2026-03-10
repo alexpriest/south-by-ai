@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { DayView } from '@/components/schedule/day-view'
 import { TimelineView } from '@/components/schedule/timeline-view'
@@ -24,7 +24,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
     setIsOwner(!!token)
   }, [schedule.id])
 
-  const handleSwap = async (dayDate: string, sessionId: string) => {
+  const handleSwap = useCallback(async (dayDate: string, sessionId: string) => {
     const editToken = localStorage.getItem(`editToken:${currentSchedule.id}`)
     const res = await fetch(`/api/schedule/${currentSchedule.id}/swap`, {
       method: 'POST',
@@ -35,13 +35,13 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
       const { schedule: updated } = await res.json()
       setCurrentSchedule(updated)
     }
-  }
+  }, [currentSchedule.id])
 
-  const dayLabels = currentSchedule.days.map((d) => {
+  const dayLabels = useMemo(() => currentSchedule.days.map((d) => {
     const date = new Date(d.date + 'T12:00:00')
     const day = date.toLocaleDateString('en-US', { weekday: 'short' })
     return `${day} ${date.getDate()}`
-  })
+  }), [currentSchedule.days])
 
   return (
     <main className="min-h-screen">

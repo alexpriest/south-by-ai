@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import type { DaySchedule, ScheduleSession } from '@/lib/types'
 import { TimelineBlock } from './timeline-block'
 import { SessionPopover } from './session-popover'
@@ -20,7 +20,7 @@ const START_MINUTES = START_HOUR * 60
 
 function isSXSWDate(dateStr: string): boolean {
   const d = new Date(dateStr + 'T00:00:00')
-  const start = new Date('2026-03-13T00:00:00')
+  const start = new Date('2026-03-12T00:00:00')
   const end = new Date('2026-03-22T23:59:59')
   return d >= start && d <= end
 }
@@ -51,7 +51,7 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
     }
   }
 
-  const overlapGroups = findOverlapGroups(day.sessions)
+  const overlapGroups = useMemo(() => findOverlapGroups(day.sessions), [day.sessions])
 
   return (
     <div className="relative overflow-hidden" style={{ height: CONTAINER_HEIGHT }}>
