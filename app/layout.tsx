@@ -18,6 +18,9 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: 'South by AI — Your Personalized SXSW 2026 Schedule',
   description: '60-second quiz. Personalized SXSW 2026 schedule built by AI. No more tab overload.',
+  icons: {
+    icon: '/favicon.svg',
+  },
   openGraph: {
     title: 'South by AI — AI-Powered SXSW Schedule Builder',
     description: '4,000+ sessions. One quiz. Your SXSW schedule, built by AI in seconds.',
