@@ -29,7 +29,6 @@ const hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR
 
 export function TimelineView({ day, onSwap }: TimelineViewProps) {
   const [popover, setPopover] = useState<{ session: ScheduleSession; rect: DOMRect } | null>(null)
-  const overlapGroups = useMemo(() => findOverlapGroups(day.sessions), [day.sessions])
 
   if (day.sessions.length === 0) {
     return (
@@ -52,6 +51,8 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
     }
   }
 
+  const overlapGroups = useMemo(() => findOverlapGroups(day.sessions), [day.sessions])
+
   return (
     <div className="relative overflow-hidden" style={{ height: CONTAINER_HEIGHT }}>
       {/* Hour grid lines and labels */}
@@ -60,10 +61,10 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
         return (
           <div
             key={hour}
-            className="absolute left-0 right-0 border-t border-b1"
+            className="absolute left-0 right-0 border-t border-white/5"
             style={{ top: `${top}%` }}
           >
-            <span className="absolute -top-2 left-0 w-12 text-xs text-muted tabular-nums">
+            <span className="absolute -top-2 left-0 w-12 text-xs text-muted/70 tabular-nums">
               {hour.toString().padStart(2, '0')}:00
             </span>
           </div>

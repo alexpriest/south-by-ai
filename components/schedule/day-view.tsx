@@ -12,7 +12,6 @@ interface DayViewProps {
 
 export function DayView({ day, onSwap }: DayViewProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set())
-  const groups = useMemo(() => findOverlapGroups(day.sessions), [day.sessions])
 
   if (day.sessions.length === 0) {
     return (
@@ -21,6 +20,8 @@ export function DayView({ day, onSwap }: DayViewProps) {
       </p>
     )
   }
+
+  const groups = useMemo(() => findOverlapGroups(day.sessions), [day.sessions])
 
   const toggleGroup = (index: number) => {
     setExpandedGroups((prev) => {
@@ -75,7 +76,7 @@ export function DayView({ day, onSwap }: DayViewProps) {
             <button
               onClick={() => toggleGroup(groupIndex)}
               aria-expanded={isExpanded}
-              className="text-xs text-muted hover:text-muted mt-1 ml-4 transition-colors"
+              className="text-xs text-muted/80 hover:text-muted mt-1 ml-4 transition-colors"
             >
               {isExpanded
                 ? `Hide ${alternatives.length} alternative${alternatives.length > 1 ? 's' : ''}`

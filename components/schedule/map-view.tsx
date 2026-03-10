@@ -48,7 +48,6 @@ export function MapView({ day }: MapViewProps) {
   const [loaded, setLoaded] = useState(false)
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
   const [activeStop, setActiveStop] = useState<number | null>(null)
-  const [mapInteractive, setMapInteractive] = useState(false)
 
   // Compute stops eagerly from day data + filter (no dependency on map)
   const stops = useMemo((): VenueStop[] => {
@@ -103,15 +102,11 @@ export function MapView({ day }: MapViewProps) {
       const link = document.createElement('link')
       link.rel = 'stylesheet'
       link.href = leafletCssHref
-      link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY='
-      link.crossOrigin = 'anonymous'
       document.head.appendChild(link)
     }
 
     const script = document.createElement('script')
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
-    script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo='
-    script.crossOrigin = 'anonymous'
     script.onload = () => setLoaded(true)
     document.head.appendChild(script)
   }, [])
@@ -126,14 +121,7 @@ export function MapView({ day }: MapViewProps) {
       ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
       : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
 
-    const isMobile = window.innerWidth < 1024
-    const map = L.map(containerRef.current, {
-      zoomControl: false,
-      dragging: !isMobile,
-      scrollWheelZoom: !isMobile,
-      tap: !isMobile,
-      touchZoom: !isMobile,
-    }).setView([30.265, -97.742], 14)
+    const map = L.map(containerRef.current, { zoomControl: false }).setView([30.265, -97.742], 14)
     mapRef.current = map
 
     L.control.zoom({ position: 'topright' }).addTo(map)
@@ -148,17 +136,7 @@ export function MapView({ day }: MapViewProps) {
       mapRef.current = null
       markersRef.current = null
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded])
-
-  // Enable map interaction on mobile when user taps
-  useEffect(() => {
-    if (!mapInteractive || !mapRef.current) return
-    const map = mapRef.current
-    map.dragging.enable()
-    map.touchZoom.enable()
-    map.tap?.enable()
-  }, [mapInteractive])
 
   // Update markers when stops change
   useEffect(() => {
@@ -250,7 +228,7 @@ export function MapView({ day }: MapViewProps) {
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-200 ${
               timeFilter === f.value
                 ? 'bg-primary/20 text-primary'
-                : 'bg-s1 text-muted hover:bg-s2 hover:text-text'
+                : 'bg-white/5 text-muted hover:bg-white/10 hover:text-text'
             }`}
           >
             {f.label}
@@ -266,11 +244,11 @@ export function MapView({ day }: MapViewProps) {
         </div>
       ) : (
         /* Map + Sidebar layout */
-        <div className="flex flex-col lg:flex-row rounded-xl overflow-hidden border border-b1">
+        <div className="flex flex-col lg:flex-row gap-4 rounded-xl overflow-hidden border border-white/10">
           {/* Map */}
           <div
-            className="relative lg:flex-1 min-h-[300px] h-[50vh] lg:min-h-[500px] lg:h-auto"
-            style={{ maxHeight: 'calc(100vh - 280px)' }}
+            className="relative lg:flex-1"
+            style={{ minHeight: '350px', height: 'calc(50vh - 100px)' }}
           >
             <div
               ref={containerRef}
@@ -278,26 +256,16 @@ export function MapView({ day }: MapViewProps) {
               style={{ width: '100%', height: '100%' }}
             />
             {/* Stop count badge */}
-            <div className="absolute top-3 left-3 z-[1000] bg-background/80 backdrop-blur-md border border-b1 rounded-full px-3 py-1.5 text-xs text-muted">
+            <div className="absolute top-3 left-3 z-[1000] bg-background/80 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5 text-xs text-muted">
               {stops.length} stop{stops.length !== 1 ? 's' : ''}
             </div>
-            {/* Mobile: tap to interact overlay */}
-            {!mapInteractive && (
-              <div
-                className="absolute inset-0 z-[1001] flex items-center justify-center lg:hidden"
-                onClick={() => setMapInteractive(true)}
-              >
-                <span className="bg-background/80 backdrop-blur-md border border-b1 rounded-full px-4 py-2 text-sm text-muted">
-                  Tap to interact with map
-                </span>
-              </div>
-            )}
           </div>
 
           {/* Session sidebar */}
           <div
             ref={listRef}
-            className="lg:w-[340px] shrink-0 overflow-y-auto bg-ss lg:border-l border-b1 max-h-[50vh] lg:max-h-[calc(100vh-280px)]"
+            className="lg:w-[340px] shrink-0 overflow-y-auto bg-white/[0.02] lg:border-l border-white/10"
+            style={{ maxHeight: 'calc(100vh - 300px)' }}
           >
             <div className="p-3 space-y-1">
               {stops.map((stop) => (
@@ -307,14 +275,14 @@ export function MapView({ day }: MapViewProps) {
                   onClick={() => handleStopClick(stop.stopNumber)}
                   className={`group rounded-lg p-3 cursor-pointer transition-all duration-200 ${
                     activeStop === stop.stopNumber
-                      ? 'bg-sh ring-1 ring-b2'
-                      : 'hover:bg-s1'
+                      ? 'bg-white/[0.08] ring-1 ring-white/15'
+                      : 'hover:bg-white/[0.04]'
                   }`}
                 >
                   {/* Stop header */}
                   <div className="flex items-center gap-2.5 mb-2">
                     <div
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-caption font-bold text-white shrink-0 transition-transform duration-200 group-hover:scale-110"
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0 transition-transform duration-200 group-hover:scale-110"
                       style={{
                         background: stop.color,
                         boxShadow: activeStop === stop.stopNumber
@@ -325,7 +293,7 @@ export function MapView({ day }: MapViewProps) {
                       {stop.stopNumber}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-caption text-muted uppercase tracking-wider truncate">
+                      <p className="text-[11px] text-muted/70 uppercase tracking-wider truncate">
                         {stop.venueName}
                       </p>
                     </div>
@@ -339,7 +307,7 @@ export function MapView({ day }: MapViewProps) {
                         <div key={session.id} className="flex items-start gap-2">
                           <div className="min-w-0 flex-1">
                             <p className={`text-sm leading-snug ${
-                              activeStop === stop.stopNumber ? 'text-text' : 'text-text-secondary'
+                              activeStop === stop.stopNumber ? 'text-text' : 'text-text/80'
                             }`}>
                               {session.priority === 1 && (
                                 <span className="text-primary mr-1">&#9733;</span>
@@ -347,11 +315,11 @@ export function MapView({ day }: MapViewProps) {
                               {session.title}
                             </p>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-caption text-muted">
+                              <span className="text-[11px] text-muted">
                                 {session.startTime} – {session.endTime}
                               </span>
                               <span
-                                className="text-micro font-medium px-1.5 py-0 rounded-full"
+                                className="text-[10px] font-medium px-1.5 py-0 rounded-full"
                                 style={{
                                   color: trackColor,
                                   background: `${trackColor}15`,
