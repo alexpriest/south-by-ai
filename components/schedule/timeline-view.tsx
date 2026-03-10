@@ -29,6 +29,7 @@ const hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR
 
 export function TimelineView({ day, onSwap }: TimelineViewProps) {
   const [popover, setPopover] = useState<{ session: ScheduleSession; rect: DOMRect } | null>(null)
+  const overlapGroups = useMemo(() => findOverlapGroups(day.sessions), [day.sessions])
 
   if (day.sessions.length === 0) {
     return (
@@ -50,8 +51,6 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
       currentTimePercent = ((nowMinutes - START_MINUTES) / TOTAL_MINUTES) * 100
     }
   }
-
-  const overlapGroups = useMemo(() => findOverlapGroups(day.sessions), [day.sessions])
 
   return (
     <div className="relative overflow-hidden" style={{ height: CONTAINER_HEIGHT }}>

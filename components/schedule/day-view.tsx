@@ -12,6 +12,7 @@ interface DayViewProps {
 
 export function DayView({ day, onSwap }: DayViewProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set())
+  const groups = useMemo(() => findOverlapGroups(day.sessions), [day.sessions])
 
   if (day.sessions.length === 0) {
     return (
@@ -20,8 +21,6 @@ export function DayView({ day, onSwap }: DayViewProps) {
       </p>
     )
   }
-
-  const groups = useMemo(() => findOverlapGroups(day.sessions), [day.sessions])
 
   const toggleGroup = (index: number) => {
     setExpandedGroups((prev) => {
