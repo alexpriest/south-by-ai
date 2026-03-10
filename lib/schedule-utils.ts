@@ -1,7 +1,13 @@
 import type { ScheduleSession } from '@/lib/types'
 
 export function parseTime(time: string): number {
-  const [h, m] = time.split(':').map(Number)
+  const parts = time.split(':')
+  const h = Number(parts[0])
+  const m = Number(parts[1])
+  if (isNaN(h) || isNaN(m)) {
+    console.warn(`parseTime: invalid time format "${time}", defaulting to 0`)
+    return 0
+  }
   return h * 60 + m
 }
 

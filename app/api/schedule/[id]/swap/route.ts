@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSchedule, saveSchedule } from '@/lib/kv'
 import { checkSwapLimit, getClientIP } from '@/lib/rate-limit'
-import { parseTime } from '@/lib/schedule-utils'
+import { parseTime, getEffectiveEndMinutes } from '@/lib/schedule-utils'
 
 export async function POST(
   request: NextRequest,
@@ -44,9 +44,9 @@ export async function POST(
   // Find overlapping sessions: two sessions overlap if
   // sessionA.startTime < sessionB.endTime && sessionB.startTime < sessionA.endTime
   const promotedStart = parseTime(promoted.startTime)
-  const promotedEnd = parseTime(promoted.endTime)
+  const promotedEnd = getEffectiveEndMinutes(promoted.startTime, promoted.endTime)
   const overlapping = day.sessions.filter((s) => {
-    return parseTime(s.startTime) < promotedEnd && promotedStart < parseTime(s.endTime)
+    return parseTime(s.startTime) < promotedEnd && promotedStart < getEffectiveEndMinutes(s.startTime, s.endTime)
   })
 
   // Demote any current top picks in the same time slot
@@ -59,7 +59,15 @@ export async function POST(
   // Promote the selected session
   promoted.priority = 1
 
-  await saveSchedule(schedule)
+  try {
+    await saveSchedule(schedule)
+  } catch (saveErr) {
+    console.error('KV save failed after swap:', saveErr)
+    return NextResponse.json(
+      { error: 'Your changes couldn\'t be saved — try again.' },
+      { status: 500 }
+    )
+  }
 
   const { editToken: _, ...publicSchedule } = schedule
   return NextResponse.json({ schedule: publicSchedule })
