@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import type { DaySchedule, ScheduleSession } from '@/lib/types'
 import { TimelineBlock } from './timeline-block'
 import { SessionPopover } from './session-popover'
-import { parseTime, findOverlapGroups } from '@/lib/schedule-utils'
+import { parseTime, getEffectiveEndMinutes, findOverlapGroups } from '@/lib/schedule-utils'
 
 interface TimelineViewProps {
   day: DaySchedule
@@ -90,7 +90,10 @@ export function TimelineView({ day, onSwap }: TimelineViewProps) {
 
           return sorted.map((session, indexInGroup) => {
             const startMin = parseTime(session.startTime)
-            const endMin = parseTime(session.endTime)
+            const endMin = Math.min(
+              getEffectiveEndMinutes(session.startTime, session.endTime),
+              START_MINUTES + TOTAL_MINUTES
+            )
             const duration = endMin - startMin
 
             const top = ((startMin - START_MINUTES) / TOTAL_MINUTES) * 100
