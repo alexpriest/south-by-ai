@@ -4,9 +4,9 @@ import { parseTime } from '@/lib/schedule-utils'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params
+  const { id } = await params
   const { dayDate, sessionId } = await request.json()
 
   if (!dayDate || !sessionId) {
