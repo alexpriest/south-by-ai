@@ -17,6 +17,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
   const [activeDayIndex, setActiveDayIndex] = useState(0)
   const [viewMode, setViewMode] = useState<'timeline' | 'list' | 'map'>('timeline')
   const [isOwner, setIsOwner] = useState(false)
+  const [swapError, setSwapError] = useState<string | null>(null)
   const activeDay = currentSchedule.days[activeDayIndex]
 
   useEffect(() => {
@@ -25,15 +26,28 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
   }, [schedule.id])
 
   const handleSwap = useCallback(async (dayDate: string, sessionId: string) => {
+    setSwapError(null)
     const editToken = localStorage.getItem(`editToken:${currentSchedule.id}`)
-    const res = await fetch(`/api/schedule/${currentSchedule.id}/swap`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dayDate, sessionId, editToken }),
-    })
-    if (res.ok) {
-      const { schedule: updated } = await res.json()
-      setCurrentSchedule(updated)
+    try {
+      const res = await fetch(`/api/schedule/${currentSchedule.id}/swap`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dayDate, sessionId, editToken }),
+      })
+      if (res.ok) {
+        const { schedule: updated } = await res.json()
+        setCurrentSchedule(updated)
+      } else {
+        const data = await res.json().catch(() => null)
+        const msg = res.status === 429
+          ? 'Too many swaps — try again in a moment.'
+          : data?.error || 'Something went wrong. Try again.'
+        setSwapError(msg)
+        setTimeout(() => setSwapError(null), 4000)
+      }
+    } catch {
+      setSwapError('Network error — check your connection and try again.')
+      setTimeout(() => setSwapError(null), 4000)
     }
   }, [currentSchedule.id])
 
@@ -224,6 +238,13 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
           </span>
         </div>
       </div>
+
+      {/* Swap error toast */}
+      {swapError && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-900/90 text-white text-sm px-5 py-3 rounded-xl shadow-lg border border-red-700/50 animate-in fade-in slide-in-from-bottom-4">
+          {swapError}
+        </div>
+      )}
 
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">

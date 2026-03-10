@@ -5,8 +5,16 @@ export function getClientIP(request: Request): string {
   const realIp = request.headers.get('x-real-ip')
   if (realIp) return realIp
   const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) return forwarded.split(',')[0].trim()
-  return 'unknown'
+  if (forwarded) return forwarded.split(',').pop()!.trim()
+  // Instead of a flat 'unknown' bucket, hash identifying headers to distribute
+  const ua = request.headers.get('user-agent') || ''
+  const lang = request.headers.get('accept-language') || ''
+  const raw = `${ua}:${lang}`
+  let hash = 0
+  for (let i = 0; i < raw.length; i++) {
+    hash = ((hash << 5) - hash + raw.charCodeAt(i)) | 0
+  }
+  return `anon:${hash.toString(36)}`
 }
 
 const generateLimiter = new Ratelimit({
@@ -21,20 +29,30 @@ const refineLimiter = new Ratelimit({
   prefix: 'ratelimit:refine',
 })
 
-export async function checkGenerateLimit(ip: string): Promise<boolean> {
-  const { success } = await generateLimiter.limit(ip)
-  return success
-}
-
 const swapLimiter = new Ratelimit({
   redis: kv,
   limiter: Ratelimit.slidingWindow(50, '1 h'),
   prefix: 'ratelimit:swap',
 })
 
+const globalDailyLimiter = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(5000, '24 h'),
+  prefix: 'ratelimit:global',
+})
+
+export async function checkGenerateLimit(ip: string): Promise<boolean> {
+  const { success } = await generateLimiter.limit(ip)
+  if (!success) return false
+  const { success: globalOk } = await globalDailyLimiter.limit('global')
+  return globalOk
+}
+
 export async function checkRefineLimit(ip: string): Promise<boolean> {
   const { success } = await refineLimiter.limit(ip)
-  return success
+  if (!success) return false
+  const { success: globalOk } = await globalDailyLimiter.limit('global')
+  return globalOk
 }
 
 export async function checkSwapLimit(ip: string): Promise<boolean> {

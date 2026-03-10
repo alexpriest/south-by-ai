@@ -69,7 +69,15 @@ export async function POST(request: Request) {
       schedule.chatHistory = schedule.chatHistory.slice(-20)
     }
 
-    await saveSchedule(schedule)
+    try {
+      await saveSchedule(schedule)
+    } catch (saveErr) {
+      console.error('KV save failed after refine:', saveErr)
+      return NextResponse.json(
+        { error: 'Your changes couldn\'t be saved — try again.' },
+        { status: 500 }
+      )
+    }
 
     const { editToken: _, ...publicSchedule } = schedule
     return NextResponse.json({ schedule: publicSchedule, reply })

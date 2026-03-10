@@ -63,18 +63,18 @@ export async function POST(request: Request) {
     let days
     let lastError: unknown
 
-    // Attempt 1: 100 sessions (normal)
+    // Attempt 1: 100 sessions, 30s timeout (leaves room for retry under 60s maxDuration)
     try {
-      days = await generateSchedule(body, sessions, 100)
+      days = await generateSchedule(body, sessions, 100, 30000)
     } catch (err) {
       lastError = err
       const msg = err instanceof Error ? err.message : String(err)
       console.warn(`Generate attempt 1 failed (100 sessions): ${msg}`)
 
-      // Attempt 2: 50 sessions (fast fallback)
+      // Attempt 2: 50 sessions, 20s timeout (total worst case ~51s, under 60s)
       await new Promise(r => setTimeout(r, 500))
       try {
-        days = await generateSchedule(body, sessions, 50)
+        days = await generateSchedule(body, sessions, 50, 20000)
       } catch (err2) {
         lastError = err2
         const msg2 = err2 instanceof Error ? err2.message : String(err2)
