@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { DayView } from '@/components/schedule/day-view'
 import { TimelineView } from '@/components/schedule/timeline-view'
@@ -16,13 +16,20 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
   const [currentSchedule, setCurrentSchedule] = useState(schedule)
   const [activeDayIndex, setActiveDayIndex] = useState(0)
   const [viewMode, setViewMode] = useState<'timeline' | 'list' | 'map'>('timeline')
+  const [isOwner, setIsOwner] = useState(false)
   const activeDay = currentSchedule.days[activeDayIndex]
 
+  useEffect(() => {
+    const token = localStorage.getItem(`editToken:${schedule.id}`)
+    setIsOwner(!!token)
+  }, [schedule.id])
+
   const handleSwap = useCallback(async (dayDate: string, sessionId: string) => {
+    const editToken = localStorage.getItem(`editToken:${currentSchedule.id}`)
     const res = await fetch(`/api/schedule/${currentSchedule.id}/swap`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dayDate, sessionId }),
+      body: JSON.stringify({ dayDate, sessionId, editToken }),
     })
     if (res.ok) {
       const { schedule: updated } = await res.json()
@@ -254,10 +261,10 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
 
             {activeDay && (
               viewMode === 'timeline'
-                ? <TimelineView day={activeDay} onSwap={(sessionId) => handleSwap(activeDay.date, sessionId)} />
+                ? <TimelineView day={activeDay} onSwap={isOwner ? (sessionId) => handleSwap(activeDay.date, sessionId) : undefined} />
                 : viewMode === 'map'
                 ? <MapView day={activeDay} />
-                : <DayView day={activeDay} onSwap={(sessionId) => handleSwap(activeDay.date, sessionId)} />
+                : <DayView day={activeDay} onSwap={isOwner ? (sessionId) => handleSwap(activeDay.date, sessionId) : undefined} />
             )}
           </>
         )}
