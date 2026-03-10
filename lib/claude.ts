@@ -53,8 +53,9 @@ function resolveScheduleSessions(
       seenIds.add(pick.id)
       const session = sessionMap.get(pick.id)
       if (!session) return null
-      if (seenTitles.has(session.title)) return null
-      seenTitles.add(session.title)
+      const dedupKey = `${session.title}|${session.date}|${session.startTime}`
+      if (seenTitles.has(dedupKey)) return null
+      seenTitles.add(dedupKey)
       return { ...session, reason: pick.reason, priority: pick.priority || 2 } as ScheduleSession
     })
     .filter((s): s is ScheduleSession => s !== null)
@@ -81,11 +82,20 @@ function matchesInterests(session: Session, interests: string[]): boolean {
   )
 }
 
+const VIBE_TYPE_MAP: Record<string, string[]> = {
+  entertain: ['Showcase', 'Screening', 'Comedy Event', 'Party'],
+  discover: ['Special Event', 'Activation', 'Comedy Event'],
+  meet: ['Networking', 'Party'],
+}
+
+const CONCERT_KEYWORDS = /\b(concert|concerts|music|showcase|live music|band|bands|performer|gig|gigs)\b/i
+
 function toPromptSession(s: Session) {
   return {
     id: s.id,
     title: s.title,
     track: s.track,
+    type: s.type,
     format: s.format,
     date: s.date,
     startTime: s.startTime,
@@ -120,16 +130,34 @@ export async function generateSchedule(
 ): Promise<DaySchedule[]> {
   const filteredSessions = filterByBadgeAndDays(sessions, preferences.days, preferences.badge)
 
-  // Further filter by selected tracks to reduce token count
-  const trackFiltered = filteredSessions.filter((s) => matchesInterests(s, preferences.interests))
+  // Filter by selected tracks
+  let trackFiltered = filteredSessions.filter((s) => matchesInterests(s, preferences.interests))
+
+  // Include event types that match user's vibes (showcases, comedy, screenings, etc.)
+  const vibeTypes = new Set(
+    preferences.vibes.flatMap(v => VIBE_TYPE_MAP[v] || [])
+  )
+  if (vibeTypes.size > 0) {
+    const vibeMatched = filteredSessions.filter(s => vibeTypes.has(s.type))
+    const existingIds = new Set(trackFiltered.map(s => s.id))
+    trackFiltered = [...trackFiltered, ...vibeMatched.filter(s => !existingIds.has(s.id))]
+  }
+
+  // Include showcases when free text mentions concerts/music
+  if (preferences.freeText && CONCERT_KEYWORDS.test(preferences.freeText)) {
+    const showcases = filteredSessions.filter(s => s.type === 'Showcase')
+    const existingIds = new Set(trackFiltered.map(s => s.id))
+    trackFiltered = [...trackFiltered, ...showcases.filter(s => !existingIds.has(s.id))]
+  }
 
   // Use track-filtered if it has enough sessions, otherwise fall back to all badge-filtered
   let sessionsForClaude = trackFiltered.length >= 20 ? trackFiltered : filteredSessions
 
-  // Cap at 300 sessions to control costs — prioritize by relevance
-  if (sessionsForClaude.length > 300) {
-    const others = sessionsForClaude.filter((s) => !trackFiltered.includes(s))
-    sessionsForClaude = [...trackFiltered.slice(0, 200), ...others.slice(0, 100)]
+  // Safety cap to stay within context limits — typical filtered set is ~1,200
+  if (sessionsForClaude.length > 1500) {
+    const matched = trackFiltered.slice(0, 1200)
+    const others = sessionsForClaude.filter(s => !trackFiltered.includes(s)).slice(0, 300)
+    sessionsForClaude = [...matched, ...others]
   }
 
   const sessionsForPrompt = sessionsForClaude.map((s) => ({
@@ -219,11 +247,19 @@ export async function refineSchedule(
 
   let availableSessions = filterByBadgeAndDays(sessions, schedule.preferences.days, schedule.preferences.badge)
 
-  // Cap at 500 sessions to control costs — prioritize by relevance
-  if (availableSessions.length > 500) {
+  // Safety cap to stay within context limits
+  if (availableSessions.length > 1500) {
     const trackMatched = availableSessions.filter((s) => matchesInterests(s, schedule.preferences.interests))
-    const others = availableSessions.filter((s) => !trackMatched.includes(s))
-    availableSessions = [...trackMatched.slice(0, 350), ...others.slice(0, 150)]
+    const vibeTypes = new Set(
+      (schedule.preferences.vibes || []).flatMap((v: string) => VIBE_TYPE_MAP[v] || [])
+    )
+    const vibeMatched = availableSessions.filter(s => vibeTypes.has(s.type) && !trackMatched.includes(s))
+    const others = availableSessions.filter(s => !trackMatched.includes(s) && !vibeMatched.includes(s))
+    availableSessions = [
+      ...trackMatched.slice(0, 600),
+      ...vibeMatched.slice(0, 600),
+      ...others.slice(0, 300),
+    ]
   }
 
   const availableSessionsForPrompt = availableSessions.map(toPromptSession)
