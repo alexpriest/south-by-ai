@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   description: '60-second quiz. Personalized SXSW 2026 schedule built by AI. No more tab overload.',
   openGraph: {
     title: 'South by AI — AI-Powered SXSW Schedule Builder',
-    description: '3,700+ sessions. One quiz. Your SXSW schedule, built by AI in seconds.',
+    description: '4,000+ sessions. One quiz. Your SXSW schedule, built by AI in seconds.',
   },
 }
 
@@ -33,6 +33,8 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches;if(d)document.documentElement.classList.add('dark')}catch(e){}})()` }} />
+        <script defer src="https://plausible.io/js/pa-QsJNXkTUQ6efxsib52IWu.js" />
+        <script dangerouslySetInnerHTML={{ __html: `window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init()` }} />
         <link rel="preconnect" href="https://unpkg.com" />
         <link rel="preconnect" href="https://tile.openstreetmap.org" />
       </head>

@@ -21,7 +21,7 @@ export default function Home() {
             {' '}No more 47 open tabs.
           </p>
           <p className="text-sm text-muted max-w-lg mx-auto mb-4">
-            3,700+ sessions. You&apos;re not reading all those descriptions. Take a 60-second quiz and get a SXSW schedule you&apos;ll actually follow.
+            4,000+ sessions. You&apos;re not reading all those descriptions. Take a 60-second quiz and get a SXSW schedule you&apos;ll actually follow.
           </p>
           <a
             href="https://schedule.sxsw.com/2026/search/event"

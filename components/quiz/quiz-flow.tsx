@@ -11,7 +11,7 @@ import { FreeText } from './free-text'
 import type { QuizState } from '@/lib/types'
 
 const LOADING_MESSAGES = [
-  'Scanning 3,700+ sessions so you don\'t have to...',
+  'Scanning 4,000+ sessions so you don\'t have to...',
   'Debating whether to schedule around taco breaks...',
   'Calculating optimal 6th Street proximity...',
   'Arguing with the AI about your music taste...',
