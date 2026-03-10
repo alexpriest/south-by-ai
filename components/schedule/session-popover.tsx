@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react'
 import type { ScheduleSession } from '@/lib/types'
 import { getTrackColor } from '@/lib/track-colors'
-import { getSpeakerUrl } from '@/lib/speaker-url'
 
 interface SessionPopoverProps {
   session: ScheduleSession
@@ -96,13 +95,13 @@ export function SessionPopover({ session, anchorRect, onClose }: SessionPopoverP
           <div className="flex flex-wrap gap-1.5">
             {session.speakers.map((speaker) => (
               <a
-                key={speaker}
-                href={getSpeakerUrl(speaker)}
+                key={speaker.name}
+                href={speaker.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-accent-readable hover:underline"
               >
-                {speaker}
+                {speaker.name}
               </a>
             ))}
           </div>

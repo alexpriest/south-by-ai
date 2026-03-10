@@ -1,6 +1,5 @@
 import type { ScheduleSession } from '@/lib/types'
 import { getTrackColor } from '@/lib/track-colors'
-import { getSpeakerUrl } from '@/lib/speaker-url'
 
 interface SessionCardProps {
   session: ScheduleSession
@@ -70,16 +69,16 @@ export function SessionCard({ session, onSwap }: SessionCardProps) {
           {session.speakers.length > 0 && (
             <p className="text-xs text-muted mt-1.5">
               {session.speakers.map((speaker, i) => (
-                <span key={speaker}>
+                <span key={speaker.name}>
                   {i > 0 && ', '}
                   <a
-                    href={getSpeakerUrl(speaker)}
+                    href={speaker.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
                     className="text-accent-readable hover:underline"
                   >
-                    {speaker}
+                    {speaker.name}
                   </a>
                 </span>
               ))}

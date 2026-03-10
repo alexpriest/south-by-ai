@@ -1,3 +1,8 @@
+export interface Speaker {
+  name: string
+  url: string
+}
+
 export interface Session {
   id: string
   title: string
@@ -9,7 +14,7 @@ export interface Session {
   startTime: string
   endTime: string
   venue: string
-  speakers: string[]
+  speakers: Speaker[]
   url: string
   tags: string[]
   imageUrl?: string | null
