@@ -1,4 +1,3 @@
-import { unstable_cache } from 'next/cache'
 import type { Session, Speaker } from './types'
 import fallbackSessions from '@/data/sessions.json'
 
@@ -164,22 +163,34 @@ async function fetchSXSWEvents(): Promise<Session[]> {
   return data.hits.map((hit) => transformSession(hit, personMap))
 }
 
-export const getSessions = unstable_cache(
-  async (): Promise<Session[]> => {
-    try {
-      const raw = await fetchSXSWEvents()
-      const live = raw.filter(s => s.date.startsWith('2026-'))
-      if (live.length > 0) {
-        console.log(`Fetched ${live.length} sessions from SXSW live (filtered ${raw.length - live.length} with invalid dates)`)
-        return live
-      }
-    } catch (e) {
-      console.warn('Live SXSW scrape failed, using fallback:', e instanceof Error ? e.message : e)
+// Module-level cache to avoid unstable_cache 2MB limit with large session datasets
+let _sessionsCache: Session[] | null = null
+let _sessionsCacheTime = 0
+const CACHE_TTL_MS = 900 * 1000 // 15 minutes
+
+async function fetchAndCacheSessions(): Promise<Session[]> {
+  try {
+    const raw = await fetchSXSWEvents()
+    const live = raw.filter(s => s.date.startsWith('2026-'))
+    if (live.length > 0) {
+      console.log(`Fetched ${live.length} sessions from SXSW live (filtered ${raw.length - live.length} with invalid dates)`)
+      return live
     }
-    const valid = (fallbackSessions as Session[]).filter(s => s.date.startsWith('2026-'))
-    console.log(`Using ${valid.length} fallback sessions (filtered ${fallbackSessions.length - valid.length} with invalid dates)`)
-    return valid
-  },
-  ['sxsw-sessions'],
-  { revalidate: 900 }
-)
+  } catch (e) {
+    console.warn('Live SXSW scrape failed, using fallback:', e instanceof Error ? e.message : e)
+  }
+  const valid = (fallbackSessions as Session[]).filter(s => s.date.startsWith('2026-'))
+  console.log(`Using ${valid.length} fallback sessions (filtered ${fallbackSessions.length - valid.length} with invalid dates)`)
+  return valid
+}
+
+export async function getSessions(): Promise<Session[]> {
+  const now = Date.now()
+  if (_sessionsCache && now - _sessionsCacheTime < CACHE_TTL_MS) {
+    return _sessionsCache
+  }
+  const sessions = await fetchAndCacheSessions()
+  _sessionsCache = sessions
+  _sessionsCacheTime = now
+  return sessions
+}

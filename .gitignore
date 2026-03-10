@@ -8,3 +8,8 @@ out
 .claude/
 .playwright-cli/
 .superpowers/
+playwright.config.ts
+test-*.mjs
+tests/
+test-results/
+screenshots/

@@ -63,7 +63,7 @@ export function ScheduleView({ schedule }: ScheduleViewProps) {
   }), [currentSchedule.days])
 
   return (
-    <main>
+    <main className="flex-1">
       {/* Header */}
       <div className="border-b border-white/5">
         <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">
