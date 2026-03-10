@@ -15,7 +15,6 @@
     "@types/react-dom": "^19.2.3",
     "@upstash/ratelimit": "^2.0.8",
     "@vercel/kv": "^3.0.0",
-    "@vercel/og": "^0.11.0",
     "autoprefixer": "^10.4.27",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.3.3",
