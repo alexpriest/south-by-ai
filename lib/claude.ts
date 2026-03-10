@@ -104,6 +104,10 @@ function toPromptSession(s: Session) {
 }
 
 function parseClaudeJSON<T>(message: Anthropic.Message, label: string): T {
+  if (message.stop_reason === 'max_tokens') {
+    console.error(`Response truncated (max_tokens) for ${label}. Content length: ${message.content[0].type === 'text' ? message.content[0].text.length : 0}`)
+    throw new Error(`AI response was truncated for ${label} — output exceeded token limit`)
+  }
   const rawText = message.content[0].type === 'text' ? message.content[0].text : ''
   const text = extractJSON(rawText)
   try {
@@ -168,7 +172,7 @@ export async function generateSchedule(
   const client = getClient()
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
+    max_tokens: 8192,
     system: [
       {
         type: 'text',
