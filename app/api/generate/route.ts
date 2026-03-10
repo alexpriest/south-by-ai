@@ -61,26 +61,23 @@ export async function POST(request: Request) {
 
     const sessions = await getSessions()
     let days
-    let attempts = 0
-    const delays = [1000, 3000]
     let lastError: unknown
-    while (attempts <= delays.length) {
+    for (let attempt = 0; attempt < 2; attempt++) {
       try {
         days = await generateSchedule(body, sessions)
         break
       } catch (err) {
         lastError = err
         const msg = err instanceof Error ? err.message : String(err)
-        console.warn(`Generate attempt ${attempts + 1} failed: ${msg}`)
-        if (attempts < delays.length) {
-          await new Promise(r => setTimeout(r, delays[attempts]))
+        console.warn(`Generate attempt ${attempt + 1} failed: ${msg}`)
+        if (attempt === 0) {
+          await new Promise(r => setTimeout(r, 1000))
         }
-        attempts++
       }
     }
     if (!days) {
       const msg = lastError instanceof Error ? lastError.message : String(lastError)
-      console.error(`All ${attempts} generate attempts failed. Last error: ${msg}`, lastError)
+      console.error(`All generate attempts failed. Last error: ${msg}`, lastError)
       throw lastError
     }
     const id = generateId()

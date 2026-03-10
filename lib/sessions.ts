@@ -167,16 +167,18 @@ async function fetchSXSWEvents(): Promise<Session[]> {
 export const getSessions = unstable_cache(
   async (): Promise<Session[]> => {
     try {
-      const live = await fetchSXSWEvents()
+      const raw = await fetchSXSWEvents()
+      const live = raw.filter(s => s.date.startsWith('2026-'))
       if (live.length > 0) {
-        console.log(`Fetched ${live.length} sessions from SXSW live`)
+        console.log(`Fetched ${live.length} sessions from SXSW live (filtered ${raw.length - live.length} with invalid dates)`)
         return live
       }
     } catch (e) {
       console.warn('Live SXSW scrape failed, using fallback:', e instanceof Error ? e.message : e)
     }
-    console.log(`Using ${fallbackSessions.length} fallback sessions`)
-    return fallbackSessions as Session[]
+    const valid = (fallbackSessions as Session[]).filter(s => s.date.startsWith('2026-'))
+    console.log(`Using ${valid.length} fallback sessions (filtered ${fallbackSessions.length - valid.length} with invalid dates)`)
+    return valid
   },
   ['sxsw-sessions'],
   { revalidate: 900 }
