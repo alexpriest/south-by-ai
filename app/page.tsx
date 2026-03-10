@@ -2,7 +2,7 @@ import { QuizFlow } from '@/components/quiz/quiz-flow'
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <main className="flex-1">
       {/* Hero */}
       <section className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
         {/* Background glow effects */}

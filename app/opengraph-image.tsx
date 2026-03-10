@@ -59,7 +59,7 @@ export default function OGImage() {
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ fontSize: 28, color: '#9CA3AF', lineHeight: 1.5, marginBottom: 32 }}>
-            60-second quiz. 4,000+ sessions. Your personalized SXSW 2026 schedule, built by&nbsp;AI.
+            4,000+ sessions. Hours of scrolling and research. Or take a 60-second quiz and get a personalized SXSW 2026 schedule, courtesy of&nbsp;AI.
           </div>
           <div
             style={{
